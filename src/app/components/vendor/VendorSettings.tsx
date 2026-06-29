@@ -2,8 +2,9 @@ import { useState } from "react";
 import {
   User, Globe, HeadphonesIcon, FileText, Info as InfoIcon, LogOut, ChevronRight, ChevronDown,
   ArrowLeft, Sun, Moon, Monitor, Check, Edit2, Camera, Phone, Mail,
-  MapPin, Shield, Crown, ExternalLink, Star, MessageCircle, Cpu, Calendar
+  MapPin, Shield, Crown, ExternalLink, Star, MessageCircle, Cpu, Calendar, X, Award
 } from "lucide-react";
+import { vendorPilots, VendorPilot } from "../shared/vendorPilotsData";
 
 interface VendorSettingsProps {
   onLogout: () => void;
@@ -85,6 +86,7 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
   const [pilots,      setPilots]      = useState(registeredPilots);
   const [newPilotName, setNewPilotName] = useState("");
   const [certStatus,  setCertStatus]  = useState({ pesticide: false, fertilizer: false, gst: false });
+  const [selectedPilotDetail, setSelectedPilotDetail] = useState<VendorPilot | null>(null);
 
   const saveProfile = () => { setSavedP(true); setEditingP(false); setTimeout(() => setSavedP(false), 2000); };
 
@@ -103,6 +105,49 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
   if (page === "profile") {
     return (
       <div className="min-h-screen bg-background pb-8">
+        {selectedPilotDetail && (
+          <div className="fixed inset-0 z-[60] bg-foreground/40 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-background w-full max-w-sm rounded-2xl max-h-[88vh] overflow-y-auto shadow-2xl">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <h3 className="text-foreground font-medium">Pilot Profile</h3>
+                <button onClick={() => setSelectedPilotDetail(null)} className="w-8 h-8 bg-secondary rounded-xl flex items-center justify-center">
+                  <X className="w-4 h-4 text-foreground" />
+                </button>
+              </div>
+              <div className="px-5 py-5 space-y-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground text-xl font-bold">{selectedPilotDetail.avatar}</div>
+                  <p className="font-semibold text-foreground mt-2">{selectedPilotDetail.name}</p>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Star className="w-3 h-3 text-amber-500 fill-amber-500" /> {selectedPilotDetail.rating} · {selectedPilotDetail.experience}
+                  </div>
+                  <span className={`mt-2 text-xs px-2 py-0.5 rounded-full ${selectedPilotDetail.status === "Active" ? "bg-secondary text-primary" : "bg-muted text-muted-foreground"}`}>
+                    {selectedPilotDetail.status}
+                  </span>
+                </div>
+                <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                  {[
+                    { icon: <Phone className="w-4 h-4" />, label: "Phone", value: selectedPilotDetail.phone },
+                    { icon: <Mail className="w-4 h-4" />, label: "Email", value: selectedPilotDetail.email },
+                    { icon: <MapPin className="w-4 h-4" />, label: "Location", value: selectedPilotDetail.location },
+                    { icon: <Award className="w-4 h-4" />, label: "DGCA License", value: selectedPilotDetail.license },
+                    { icon: <Cpu className="w-4 h-4" />, label: "Drone Registration", value: selectedPilotDetail.droneRegistration },
+                    { icon: <Check className="w-4 h-4" />, label: "DGCA Verified", value: selectedPilotDetail.dgcaVerified ? "Yes" : "Pending" },
+                    { icon: <Calendar className="w-4 h-4" />, label: "Jobs Completed", value: String(selectedPilotDetail.jobs) },
+                  ].map(({ icon, label, value }, i) => (
+                    <div key={label} className={`flex items-center gap-3 p-4 ${i > 0 ? "border-t border-border" : ""}`}>
+                      <div className="text-primary flex-shrink-0">{icon}</div>
+                      <div className="flex-1">
+                        <p className="text-[10px] text-muted-foreground">{label}</p>
+                        <p className="text-xs font-medium text-foreground mt-0.5">{value}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <BackHeader title="Business Profile" onBack={() => setPage(null)} />
         <div className="px-5 space-y-4">
           <div className="flex items-center justify-between">
@@ -160,6 +205,25 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
               </div>
             ))}
           </div>
+
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Pilots Under Vendor</p>
+            <div className="space-y-2">
+              {vendorPilots.map((p) => (
+                <button key={p.id} onClick={() => setSelectedPilotDetail(p)}
+                  className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-3 hover:bg-secondary/30 transition-colors text-left">
+                  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-semibold">{p.avatar}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">{p.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{p.license} · {p.jobs} jobs · ★ {p.rating}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${p.status === "Active" ? "bg-secondary text-primary" : "bg-muted text-muted-foreground"}`}>{p.status}</span>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+
           {editingP && <button onClick={saveProfile} className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">Save Changes</button>}
         </div>
       </div>

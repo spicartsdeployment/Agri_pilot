@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Edit2, Eye, Trash2, Check, X, ChevronDown, ArrowLeft, Cpu, User, Phone, MapPin, Calendar, DollarSign, CreditCard, Package } from "lucide-react";
+import { useAgriStore, updateInventoryStock, acceptAgriRequest, declineAgriRequest } from "../shared/agriInputsStore";
 
 // ── Types ────────────────────────────────────────────────────────────
 type DroneCategory = "Agriculture" | "Survey" | "Inspection" | "Cinematic";
@@ -41,104 +42,91 @@ const buyerRequests = [
   { id: "BQ-102", buyer: "Ramesh Farms Ltd.", phone: "+91 90011 77332", offer: 52000, droneId: 2, message: "Ready to pay in full. Available this week." },
 ];
 
-const agriCatalog = {
-  pesticide: [
-    { brand: "Bayer Confidor 200 SL", unit: "L", pricePerUnit: 850 },
-    { brand: "Syngenta Polo 500", unit: "L", pricePerUnit: 720 },
-    { brand: "UPL Saaf", unit: "kg", pricePerUnit: 420 },
-    { brand: "Dhanuka Super D 45", unit: "L", pricePerUnit: 680 },
-  ],
-  fertilizer: [
-    { brand: "IFFCO Urea 46%", unit: "kg", pricePerUnit: 320 },
-    { brand: "Coromandel DAP", unit: "kg", pricePerUnit: 1450 },
-    { brand: "Mahadhan Potash", unit: "kg", pricePerUnit: 980 },
-    { brand: "NPK 19:19:19", unit: "kg", pricePerUnit: 1120 },
-  ],
-};
+const agriTypeLabel: Record<string, string> = { pesticide: "Pesticide", fertilizer: "Fertilizer", chemical: "Chemical" };
 
-// ── Agri-Inputs purchase ─────────────────────────────────────────────
 function AgriInputsPanel() {
-  const [inputType, setInputType] = useState<"pesticide" | "fertilizer">("pesticide");
-  const [brand, setBrand] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [paying, setPaying] = useState(false);
-  const [paid, setPaid] = useState(false);
+  const { inventory, requests } = useAgriStore();
+  const [editingStock, setEditingStock] = useState<Record<string, string>>({});
+  const pending = requests.filter((r) => r.status === "pending");
 
-  const products = agriCatalog[inputType];
-  const selected = products.find((p) => p.brand === brand);
-  const qty = parseInt(quantity, 10) || 0;
-  const total = selected ? selected.pricePerUnit * qty : 0;
-
-  const handlePay = () => {
-    if (!selected || qty < 1) return;
-    setPaying(true);
-    setTimeout(() => { setPaying(false); setPaid(true); }, 1200);
+  const saveStock = (id: string) => {
+    const val = parseInt(editingStock[id], 10);
+    if (!isNaN(val)) updateInventoryStock(id, val);
+    setEditingStock((p) => { const n = { ...p }; delete n[id]; return n; });
   };
 
-  if (paid) {
-    return (
-      <div className="bg-card border border-border rounded-2xl p-6 text-center space-y-3">
-        <div className="w-14 h-14 bg-secondary rounded-full flex items-center justify-center mx-auto">
-          <Check className="w-7 h-7 text-primary" />
-        </div>
-        <p className="text-sm font-semibold text-foreground">Payment Successful!</p>
-        <p className="text-xs text-muted-foreground">{qty} {selected?.unit} of {brand} ordered</p>
-        <p className="text-sm font-semibold text-primary">₹{total.toLocaleString()}</p>
-        <button onClick={() => { setPaid(false); setBrand(""); setQuantity(""); }}
-          className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">New Order</button>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="bg-secondary rounded-xl p-3 flex items-center gap-2">
         <Package className="w-4 h-4 text-primary" />
-        <p className="text-xs text-muted-foreground">Purchase pesticides & fertilizers — select brand, quantity, then pay</p>
+        <p className="text-xs text-muted-foreground">Manage available stock of pesticides, fertilizers & chemicals</p>
       </div>
 
-      <div>
-        <label className="text-xs text-muted-foreground mb-2 block">Product Type</label>
-        <div className="flex gap-2">
-          {(["pesticide", "fertilizer"] as const).map((t) => (
-            <button key={t} onClick={() => { setInputType(t); setBrand(""); setQuantity(""); }}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-medium border capitalize ${inputType === t ? "border-primary bg-secondary text-primary" : "border-border text-muted-foreground"}`}>
-              {t}
-            </button>
+      {pending.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Pilot Purchase Requests</p>
+          {pending.map((req) => (
+            <div key={req.id} className="bg-card border border-border rounded-2xl p-4 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{req.pilotName}</p>
+                  <p className="text-xs text-muted-foreground font-mono">{req.id} · {req.date}</p>
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Pending</span>
+              </div>
+              <div className="bg-secondary rounded-xl p-3 text-xs space-y-1">
+                <div className="flex justify-between"><span className="text-muted-foreground">Product</span><span className="text-foreground font-medium">{req.brand}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Quantity</span><span className="text-foreground">{req.quantity} {req.unit}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="text-primary font-semibold">₹{req.amount.toLocaleString()}</span></div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => declineAgriRequest(req.id)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-destructive/30 rounded-xl text-xs text-destructive hover:bg-destructive/5">
+                  <X className="w-3.5 h-3.5" /> Decline
+                </button>
+                <button onClick={() => acceptAgriRequest(req.id)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-medium hover:opacity-90">
+                  <Check className="w-3.5 h-3.5" /> Accept
+                </button>
+              </div>
+            </div>
           ))}
         </div>
-      </div>
-
-      <SelectField label="Brand" value={brand} options={products.map((p) => p.brand)}
-        onChange={(v) => { setBrand(v); setQuantity(""); }} />
-
-      {selected && (
-        <div className="bg-muted rounded-xl px-3 py-2 text-xs flex justify-between">
-          <span className="text-muted-foreground">Unit price</span>
-          <span className="text-foreground font-medium">₹{selected.pricePerUnit}/{selected.unit}</span>
-        </div>
       )}
 
-      <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Quantity {selected ? `(${selected.unit})` : ""}</label>
-        <input type="number" min={1} placeholder="e.g. 10" value={quantity}
-          onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ""))}
-          disabled={!brand}
-          className="w-full bg-input-background rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:ring-1 focus:ring-primary disabled:opacity-50" />
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Available Stock</p>
+        {inventory.map((item) => (
+          <div key={item.id} className="bg-card border border-border rounded-2xl p-4">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <p className="text-sm font-medium text-foreground">{item.brand}</p>
+                <p className="text-[10px] text-muted-foreground">{agriTypeLabel[item.type]} · ₹{item.pricePerUnit}/{item.unit}</p>
+              </div>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${item.stock > 20 ? "bg-secondary text-primary" : item.stock > 0 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>
+                {item.stock > 0 ? `${item.stock} ${item.unit} left` : "Out of stock"}
+              </span>
+            </div>
+            <div className="flex gap-2 items-center">
+              <input
+                type="number"
+                min={0}
+                placeholder={String(item.stock)}
+                value={editingStock[item.id] ?? ""}
+                onChange={(e) => setEditingStock({ ...editingStock, [item.id]: e.target.value.replace(/\D/g, "") })}
+                className="flex-1 bg-input-background rounded-xl px-3 py-2 text-xs text-foreground outline-none focus:ring-1 focus:ring-primary"
+              />
+              <button
+                onClick={() => saveStock(item.id)}
+                disabled={editingStock[item.id] === undefined || editingStock[item.id] === ""}
+                className="px-3 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-medium disabled:opacity-40"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
-
-      {total > 0 && (
-        <div className="bg-secondary rounded-xl p-4 flex items-center justify-between">
-          <span className="text-sm text-foreground">Total Amount</span>
-          <span className="text-lg font-semibold text-primary">₹{total.toLocaleString()}</span>
-        </div>
-      )}
-
-      <button onClick={handlePay} disabled={!brand || qty < 1 || paying}
-        className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium disabled:opacity-40">
-        <CreditCard className="w-4 h-4" />
-        {paying ? "Processing Payment…" : `Proceed to Payment${total > 0 ? ` — ₹${total.toLocaleString()}` : ""}`}
-      </button>
     </div>
   );
 }

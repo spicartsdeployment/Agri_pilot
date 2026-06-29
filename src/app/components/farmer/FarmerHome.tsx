@@ -8,6 +8,7 @@ import { NotificationPanel } from "./NotificationPanel";
 import { FarmerProfileModal } from "./FarmerProfileModal";
 import { initialBookings, initialFarms, initialNotifications, Booking, Farm, FarmerNotification, JOB_TRACKING_EVENTS } from "./farmerData";
 import { getDgcaFlyStatus } from "../shared/dgcaUtils";
+import { MapWithPins } from "../shared/MapWithPins";
 
 type SubPage = "book" | "jobs" | "farms" | "refer" | null;
 
@@ -198,37 +199,32 @@ export function FarmerHome() {
         )}
       </div>
 
-      {/* ── OSM Map — farms stacked vertically ── */}
+      {/* ── Map — farmer fields ── */}
       <div className="mx-5 mb-5">
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-            <MapPin className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Kamptee, Maharashtra</span>
-          </div>
-          <div style={{ height: 180 }}>
-            <iframe
-              src="https://www.openstreetmap.org/export/embed.html?bbox=79.05%2C21.08%2C79.25%2C21.28&layer=mapnik&marker=21.18%2C79.15"
-              width="100%"
-              height="180"
-              style={{ border: 0, display: "block" }}
-              title="Farm location map"
-              loading="lazy"
-            />
-          </div>
-          {/* Farm list stacked vertically */}
-          <div className="p-3 space-y-2">
-            {farms.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => setSelectedFarm(selectedFarm === f.id ? null : f.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border text-left transition-colors ${selectedFarm === f.id ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-foreground border-border hover:bg-muted"}`}
-              >
-                <span className="w-2 h-2 rounded-full bg-current opacity-70 flex-shrink-0" />
-                <span className="text-xs font-medium flex-1">{f.name}</span>
-                <span className={`text-xs ${selectedFarm === f.id ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{f.crop} · {f.acres} ac</span>
-              </button>
-            ))}
-          </div>
+        <MapWithPins
+          title="Kamptee, Maharashtra"
+          height={180}
+          pins={farms.map((f) => ({
+            id: String(f.id),
+            label: f.name,
+            lat: f.lat,
+            lng: f.lng,
+            color: selectedFarm === f.id ? "#16a34a" : "#0369a1",
+          }))}
+          legend={[{ label: "Your Fields", color: "#0369a1" }]}
+        />
+        <div className="bg-card rounded-b-2xl border border-t-0 border-border p-3 space-y-2 -mt-px">
+          {farms.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setSelectedFarm(selectedFarm === f.id ? null : f.id)}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border text-left transition-colors ${selectedFarm === f.id ? "bg-primary text-primary-foreground border-primary" : "bg-secondary text-foreground border-border hover:bg-muted"}`}
+            >
+              <span className="w-2 h-2 rounded-full bg-current opacity-70 flex-shrink-0" />
+              <span className="text-xs font-medium flex-1">{f.name}</span>
+              <span className={`text-xs ${selectedFarm === f.id ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{f.crop} · {f.acres} ac</span>
+            </button>
+          ))}
         </div>
       </div>
 

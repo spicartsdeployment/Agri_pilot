@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { Search, X, Check, MapPin, Star, Cpu, User, ChevronLeft, ChevronRight, CreditCard, Clock, AlertTriangle } from "lucide-react";
+import { Search, X, Check, MapPin, Star, Cpu, User, ChevronLeft, ChevronRight, CreditCard, Clock, AlertTriangle, Package, Send } from "lucide-react";
 import { ADVANCE_PERCENT, DRONE_RENTAL_FREE_CANCEL_MS, DRONE_RENTAL_MIN_HOURS, DRONE_RENTAL_MAX_DAYS } from "../shared/dgcaUtils";
+import { pilotProfile } from "./pilotData";
+import { useAgriStore, submitAgriPurchaseRequest } from "../shared/agriInputsStore";
 
 const nearbyDrones = [
   {
@@ -137,8 +139,107 @@ function DroneCalendar({
   );
 }
 
+function BuyAgriInputsPanel() {
+  const { inventory } = useAgriStore();
+  const [inputType, setInputType] = useState<"pesticide" | "fertilizer" | "chemical">("pesticide");
+  const [productId, setProductId] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [requestId, setRequestId] = useState("");
+
+  const products = inventory.filter((i) => i.type === inputType && i.stock > 0);
+  const selected = inventory.find((i) => i.id === productId);
+  const qty = parseInt(quantity, 10) || 0;
+  const total = selected ? selected.pricePerUnit * qty : 0;
+  const overStock = selected ? qty > selected.stock : false;
+
+  const handleSubmit = () => {
+    if (!selected || qty < 1 || overStock) return;
+    const id = submitAgriPurchaseRequest({
+      pilotName: pilotProfile.name,
+      productId: selected.id,
+      brand: selected.brand,
+      type: selected.type,
+      quantity: qty,
+      unit: selected.unit,
+      amount: total,
+    });
+    setRequestId(id);
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="bg-card border border-border rounded-2xl p-6 text-center space-y-3">
+        <div className="w-14 h-14 bg-secondary rounded-full flex items-center justify-center mx-auto">
+          <Check className="w-7 h-7 text-primary" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">Request Sent!</p>
+        <p className="text-xs text-muted-foreground">Request {requestId} sent to your vendor for approval</p>
+        <button onClick={() => { setSubmitted(false); setProductId(""); setQuantity(""); }}
+          className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">New Request</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-secondary rounded-xl p-3 flex items-center gap-2">
+        <Package className="w-4 h-4 text-primary" />
+        <p className="text-xs text-muted-foreground">Select brand & quantity — request goes to vendor for approval</p>
+      </div>
+
+      <div className="flex gap-1.5">
+        {(["pesticide", "fertilizer", "chemical"] as const).map((t) => (
+          <button key={t} onClick={() => { setInputType(t); setProductId(""); setQuantity(""); }}
+            className={`flex-1 py-2 rounded-xl text-[10px] font-medium border capitalize ${inputType === t ? "border-primary bg-secondary text-primary" : "border-border text-muted-foreground"}`}>
+            {t}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-2">
+        {products.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-4">No {inputType} brands available right now</p>
+        ) : products.map((p) => (
+          <button key={p.id} onClick={() => { setProductId(p.id); setQuantity(""); }}
+            className={`w-full text-left p-3 rounded-xl border transition-colors ${productId === p.id ? "border-primary bg-secondary" : "border-border bg-card"}`}>
+            <div className="flex justify-between items-start">
+              <p className="text-xs font-medium text-foreground">{p.brand}</p>
+              <span className="text-[10px] text-primary font-medium">{p.stock} {p.unit}</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-0.5">₹{p.pricePerUnit}/{p.unit}</p>
+          </button>
+        ))}
+      </div>
+
+      {selected && (
+        <>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Quantity ({selected.unit}) — max {selected.stock}</label>
+            <input type="number" min={1} max={selected.stock} placeholder="e.g. 10" value={quantity}
+              onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ""))}
+              className="w-full bg-input-background rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:ring-1 focus:ring-primary" />
+            {overStock && <p className="text-[10px] text-destructive mt-1">Exceeds available stock</p>}
+          </div>
+          {total > 0 && (
+            <div className="bg-secondary rounded-xl p-4 flex items-center justify-between">
+              <span className="text-sm text-foreground">Estimated Total</span>
+              <span className="text-lg font-semibold text-primary">₹{total.toLocaleString()}</span>
+            </div>
+          )}
+          <button onClick={handleSubmit} disabled={qty < 1 || overStock}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium disabled:opacity-40">
+            <Send className="w-4 h-4" /> Submit Request to Vendor
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function PilotDrone() {
-  const [activeTab,      setActiveTab]      = useState<"rent"|"myDrone">("rent");
+  const [activeTab,      setActiveTab]      = useState<"rent"|"myDrone"|"buyInputs">("rent");
   const [search,         setSearch]         = useState("");
   const [bookingDrone,   setBookingDrone]   = useState<(typeof nearbyDrones)[0] | null>(null);
   const [myBookedDates,  setMyBookedDates]  = useState<Record<string, string[]>>({}); // droneId → dates[]
@@ -239,11 +340,15 @@ export function PilotDrone() {
       </div>
 
       <div className="px-5 mb-5">
-        <div className="flex bg-secondary rounded-xl p-1 gap-1">
-          {(["rent","myDrone"] as const).map((t) => (
-            <button key={t} onClick={() => setActiveTab(t)}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {t === "rent" ? "Rent a Drone" : "Rent My Drone"}
+        <div className="flex bg-secondary rounded-xl p-1 gap-1 overflow-x-auto">
+          {([
+            { id: "rent" as const, label: "Rent a Drone" },
+            { id: "myDrone" as const, label: "Rent My Drone" },
+            { id: "buyInputs" as const, label: "Buy Pesticides & Fertilizers" },
+          ]).map((t) => (
+            <button key={t.id} onClick={() => setActiveTab(t.id)}
+              className={`flex-1 min-w-0 py-2.5 px-1 rounded-lg text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap ${activeTab === t.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+              {t.label}
             </button>
           ))}
         </div>
@@ -466,6 +571,8 @@ export function PilotDrone() {
             )}
           </div>
         ))}
+
+        {activeTab === "buyInputs" && <BuyAgriInputsPanel />}
       </div>
     </div>
   );

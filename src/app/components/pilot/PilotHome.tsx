@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { Bell, Droplets, Wind, MapPin, Clock, Check, X, Eye, AlertCircle, Navigation, Settings, ChevronRight, Plane } from "lucide-react";
-import { pilotProfile, initialJobRequests, weatherData, JobRequest } from "./pilotData";
+import { useState, useMemo } from "react";
+import { Bell, Droplets, Wind, MapPin, Clock, Check, X, Eye, AlertCircle, Settings, ChevronRight, Plane } from "lucide-react";
+import { pilotProfile, initialJobRequests, weatherData, JobRequest, activeJobsList } from "./pilotData";
 import { PilotProfileModal } from "./PilotProfileModal";
 import { JobDetailModal } from "./JobDetailModal";
+import { DeclineJobModal } from "./DeclineJobModal";
+import { MapWithPins } from "../shared/MapWithPins";
 import { getDgcaFlyStatus } from "../shared/dgcaUtils";
 
 // ── Weather condition → gradient & text ──────────────────────────────
@@ -76,11 +78,6 @@ const jobTypeColors: Record<string, string> = {
   Seeding:     "bg-yellow-100 text-yellow-700",
 };
 
-const mapPins = [
-  { label: "Pending",  bg: "bg-yellow-400",  top: "30%", left: "25%" },
-  { label: "Active",   bg: "bg-gray-700",    top: "55%", left: "55%" },
-  { label: "Next Job", bg: "bg-amber-500",   top: "40%", left: "72%" },
-];
 
 interface PilotHomeProps {
   onGoToSettings: () => void;
@@ -94,8 +91,18 @@ export function PilotHome({ onGoToSettings }: PilotHomeProps) {
   const [detailJob, setDetailJob] = useState<JobRequest | null>(null);
   const [pilotRating, setPilotRating] = useState(pilotProfile.rating);
   const [cancelCount, setCancelCount] = useState(pilotProfile.cancellationCount);
+  const [declineTarget, setDeclineTarget] = useState<{ id: string; farmerName: string } | null>(null);
 
   const pendingJobs = jobs.filter((j) => j.status === "pending");
+  const jobMapPins = useMemo(() => {
+    const active = activeJobsList
+      .filter((j) => j.jobStatus === "active")
+      .map((j) => ({ id: j.id, label: j.farm, lat: j.lat, lng: j.lng, color: "#374151" }));
+    const accepted = jobs
+      .filter((j) => j.status === "accepted")
+      .map((j) => ({ id: j.id, label: j.location.split(",")[0], lat: j.lat, lng: j.lng, color: "#16a34a" }));
+    return [...active, ...accepted];
+  }, [jobs]);
   const { pct, missing, filled, total } = completionStats();
   const weatherStyle = getWeatherStyle(weatherData.today.condition);
   const flyStatus = getDgcaFlyStatus(weatherData.today.wind, weatherData.today.condition);
@@ -105,12 +112,13 @@ export function PilotHome({ onGoToSettings }: PilotHomeProps) {
     setJobs(jobs.map((j) => j.id === id ? { ...j, status: "accepted", customQuote: quote } : j));
     setDetailJob(null);
   };
-  const handleDecline = (id: string) => {
-    setJobs(jobs.map((j) => j.id === id ? { ...j, status: "declined" } : j));
+  const handleDecline = (id: string, reason: string) => {
+    setJobs(jobs.map((j) => j.id === id ? { ...j, status: "declined", declineReason: reason } : j));
     const newCount = cancelCount + 1;
     setCancelCount(newCount);
     if (newCount >= 2) setPilotRating((r) => Math.max(3.5, Math.round((r - 0.2) * 10) / 10));
     setDetailJob(null);
+    setDeclineTarget(null);
   };
 
   return (
@@ -121,7 +129,14 @@ export function PilotHome({ onGoToSettings }: PilotHomeProps) {
           job={detailJob}
           onClose={() => setDetailJob(null)}
           onAccept={(quote) => handleAccept(detailJob.id, quote)}
-          onDecline={() => handleDecline(detailJob.id)}
+          onDecline={() => setDeclineTarget({ id: detailJob.id, farmerName: detailJob.farmer })}
+        />
+      )}
+      {declineTarget && (
+        <DeclineJobModal
+          farmerName={declineTarget.farmerName}
+          onClose={() => setDeclineTarget(null)}
+          onConfirm={(reason) => handleDecline(declineTarget.id, reason)}
         />
       )}
 
@@ -272,35 +287,17 @@ export function PilotHome({ onGoToSettings }: PilotHomeProps) {
         )}
       </div>
 
-      {/* Map Card */}
+      {/* Map Card — Active & Accepted jobs */}
       <div className="mx-5 mb-4">
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Navigation className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">Surroundings</span>
-            </div>
-            <div className="flex items-center gap-3 text-xs">
-              {mapPins.map((p) => (
-                <div key={p.label} className="flex items-center gap-1">
-                  <span className={`w-2 h-2 rounded-full ${p.bg}`} />
-                  <span className="text-muted-foreground">{p.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* OpenStreetMap — Nagpur area */}
-          <div style={{ height: 180 }}>
-            <iframe
-              src="https://www.openstreetmap.org/export/embed.html?bbox=79.00%2C21.05%2C79.30%2C21.30&layer=mapnik&marker=21.15%2C79.10"
-              width="100%"
-              height="180"
-              style={{ border: 0, display: "block" }}
-              title="Pilot surroundings map"
-              loading="lazy"
-            />
-          </div>
-        </div>
+        <MapWithPins
+          title="Job Locations"
+          height={180}
+          pins={jobMapPins}
+          legend={[
+            { label: "Active", color: "#374151" },
+            { label: "Accepted", color: "#16a34a" },
+          ]}
+        />
       </div>
 
       {/* Available Job Requests */}
@@ -351,7 +348,7 @@ export function PilotHome({ onGoToSettings }: PilotHomeProps) {
                     className="flex items-center justify-center gap-1.5 px-3 py-2.5 border border-border rounded-xl text-xs text-foreground hover:bg-secondary transition-colors flex-1">
                     <Eye className="w-3.5 h-3.5" /> View Details
                   </button>
-                  <button onClick={() => handleDecline(job.id)}
+                  <button onClick={() => setDeclineTarget({ id: job.id, farmerName: job.farmer })}
                     className="flex items-center justify-center gap-1.5 px-3 py-2.5 border border-destructive/30 rounded-xl text-xs text-destructive hover:bg-destructive/5 transition-colors">
                     <X className="w-3.5 h-3.5" /> Decline
                   </button>

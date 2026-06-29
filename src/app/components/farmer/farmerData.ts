@@ -9,6 +9,8 @@ export type Farm = {
   acres: number;
   img: string;
   location?: string;
+  lat: number;
+  lng: number;
 };
 
 export type Booking = {
@@ -58,9 +60,9 @@ export function newBookingId() {
 }
 
 export const initialFarms: Farm[] = [
-  { id: 1, name: "North Field", crop: "Wheat", acres: 12, img: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=120&h=80&fit=crop&auto=format", location: "Kamptee, MH" },
-  { id: 2, name: "South Paddy", crop: "Rice", acres: 8, img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=120&h=80&fit=crop&auto=format", location: "Kamptee, MH" },
-  { id: 3, name: "East Orchard", crop: "Mango", acres: 5, img: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=120&h=80&fit=crop&auto=format", location: "Kamptee, MH" },
+  { id: 1, name: "North Field", crop: "Wheat", acres: 12, img: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=120&h=80&fit=crop&auto=format", location: "Kamptee, MH", lat: 21.19, lng: 79.14 },
+  { id: 2, name: "South Paddy", crop: "Rice", acres: 8, img: "https://images.unsplash.com/photo-1536657464919-892534f60d6e?w=120&h=80&fit=crop&auto=format", location: "Kamptee, MH", lat: 21.17, lng: 79.16 },
+  { id: 3, name: "East Orchard", crop: "Mango", acres: 5, img: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=120&h=80&fit=crop&auto=format", location: "Kamptee, MH", lat: 21.20, lng: 79.18 },
 ];
 
 export const initialBookings: Booking[] = [

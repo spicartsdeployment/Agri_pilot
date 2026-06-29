@@ -37,6 +37,8 @@ function AddFarmModal({ onClose, onSave }: { onClose: () => void; onSave: (farm:
       crop,
       acres: a,
       location,
+      lat: 21.17 + Math.random() * 0.04,
+      lng: 79.13 + Math.random() * 0.06,
       img: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=120&h=80&fit=crop&auto=format",
     });
     onClose();

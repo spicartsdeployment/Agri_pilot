@@ -33,6 +33,9 @@ export type JobRequest = {
   status: "pending" | "accepted" | "declined";
   requiresQuote?: boolean;
   customQuote?: number;
+  declineReason?: string;
+  lat: number;
+  lng: number;
 };
 
 export const initialJobRequests: JobRequest[] = [
@@ -52,6 +55,7 @@ export const initialJobRequests: JobRequest[] = [
     landType: "Irrigated",
     cropStage: "Tillering",
     status: "pending",
+    lat: 21.15, lng: 79.10,
   },
   {
     id: "JR-502",
@@ -69,6 +73,7 @@ export const initialJobRequests: JobRequest[] = [
     landType: "Wetland",
     cropStage: "Transplanting",
     status: "pending",
+    lat: 21.12, lng: 79.22,
   },
   {
     id: "JR-503",
@@ -85,7 +90,8 @@ export const initialJobRequests: JobRequest[] = [
     soilType: "Red Loam",
     landType: "Dryland",
     cropStage: "Flowering",
-    status: "pending",
+    status: "accepted",
+    lat: 21.18, lng: 79.14,
   },
   {
     id: "JR-504",
@@ -104,6 +110,7 @@ export const initialJobRequests: JobRequest[] = [
     cropStage: "Heading",
     status: "pending",
     requiresQuote: true,
+    lat: 21.18, lng: 79.15,
   },
 ];
 
@@ -123,6 +130,8 @@ export type ActiveJob = {
   geofenceVerified?: boolean;
   arrivalPhotoTaken?: boolean;
   autoProgress?: number;
+  lat: number;
+  lng: number;
 };
 
 export const activeJobsList: ActiveJob[] = [
@@ -139,6 +148,7 @@ export const activeJobsList: ActiveJob[] = [
     pay: 4500,
     passKey: "AGRI-9X42",
     jobStatus: "active",
+    lat: 21.16, lng: 79.12,
   },
   {
     id: "JB-2405",
@@ -153,6 +163,7 @@ export const activeJobsList: ActiveJob[] = [
     pay: 6750,
     passKey: "AGRI-P7R1",
     jobStatus: "today",
+    lat: 21.14, lng: 79.20,
   },
   {
     id: "JB-2410",
@@ -166,6 +177,7 @@ export const activeJobsList: ActiveJob[] = [
     location: "Wardha, MH",
     pay: 3200,
     jobStatus: "upcoming",
+    lat: 21.21, lng: 79.11,
   },
   {
     id: "JB-2412",
@@ -179,6 +191,7 @@ export const activeJobsList: ActiveJob[] = [
     location: "Buldhana, MH",
     pay: 9000,
     jobStatus: "upcoming",
+    lat: 21.13, lng: 79.17,
   },
 ];
 

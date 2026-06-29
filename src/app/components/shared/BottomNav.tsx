@@ -10,11 +10,12 @@ interface BottomNavProps {
   items: NavItem[];
   active: string;
   onChange: (id: string) => void;
+  wide?: boolean;
 }
 
-export function BottomNav({ items, active, onChange }: BottomNavProps) {
+export function BottomNav({ items, active, onChange, wide }: BottomNavProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 max-w-sm mx-auto bg-card border-t border-border px-2 pb-safe">
+    <div className={`fixed bottom-0 left-0 right-0 ${wide ? "max-w-6xl" : "max-w-sm"} mx-auto bg-card border-t border-border px-2 pb-safe z-40`}>
       <div className="flex items-center justify-around py-2">
         {items.map(({ id, label, icon: Icon }) => {
           const isActive = active === id;

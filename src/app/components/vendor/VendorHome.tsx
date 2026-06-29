@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Bell, User, Check, X, ChevronRight, Cpu, Clock, TrendingUp, Calendar, Camera, Edit2, Phone, Mail, MapPin, Star, Shield, FileText } from "lucide-react";
+import { vendorPilots, VendorPilot } from "../shared/vendorPilotsData";
 
 const rentalRequests = [
   { id: "REQ-101", pilot: "Arjun Singh",  experience: "3 years", license: "DL-MH-2023-0441", duration: "2 days", reason: "Crop spraying (Wheat)", cost: 4800, status: "pending" },
@@ -34,6 +35,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
   const [editing, setEditing] = useState(false);
   const [profile, setProfile] = useState(vendorProfile);
   const [saved, setSaved] = useState(false);
+  const [selectedPilot, setSelectedPilot] = useState<VendorPilot | null>(null);
   const save = () => { setSaved(true); setEditing(false); setTimeout(() => setSaved(false), 2000); };
 
   return (
@@ -95,6 +97,53 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
               </div>
             ))}
           </div>
+
+          {selectedPilot ? (
+            <div className="space-y-3">
+              <button onClick={() => setSelectedPilot(null)} className="text-xs text-primary hover:underline">← Back to pilot list</button>
+              <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-bold">{selectedPilot.avatar}</div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{selectedPilot.name}</p>
+                    <p className="text-xs text-muted-foreground">★ {selectedPilot.rating} · {selectedPilot.experience}</p>
+                  </div>
+                </div>
+                {[
+                  ["Phone", selectedPilot.phone],
+                  ["Email", selectedPilot.email],
+                  ["Location", selectedPilot.location],
+                  ["DGCA License", selectedPilot.license],
+                  ["Drone Reg.", selectedPilot.droneRegistration],
+                  ["DGCA Verified", selectedPilot.dgcaVerified ? "Yes" : "Pending"],
+                  ["Jobs", String(selectedPilot.jobs)],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex justify-between text-xs border-t border-border pt-2 first:border-0 first:pt-0">
+                    <span className="text-muted-foreground">{k}</span>
+                    <span className="text-foreground font-medium text-right max-w-[60%]">{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Pilots Under Vendor</p>
+              <div className="space-y-2">
+                {vendorPilots.map((p) => (
+                  <button key={p.id} onClick={() => setSelectedPilot(p)}
+                    className="w-full bg-card border border-border rounded-xl p-3 flex items-center gap-3 text-left hover:bg-secondary/30">
+                    <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-xs font-bold">{p.avatar}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground">{p.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{p.license}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {editing && <button onClick={save} className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">Save Changes</button>}
         </div>
       </div>

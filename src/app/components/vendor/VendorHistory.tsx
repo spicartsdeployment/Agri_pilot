@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Cpu, TrendingUp, Package, ArrowLeft, Phone, MapPin, Calendar, FileText, User, Check } from "lucide-react";
+import { Cpu, TrendingUp, Package, ArrowLeft, Phone, MapPin, Calendar, FileText, User, Check, Beaker } from "lucide-react";
+import { useAgriStore } from "../shared/agriInputsStore";
 
 const stats = [
   { label: "Total Rentals", value: "38", icon: <Cpu className="w-4 h-4" /> },
@@ -161,6 +162,7 @@ function SaleDetailView({ item, onBack }: { item: SaleItem; onBack: () => void }
 export function VendorHistory() {
   const [selectedRental, setSelectedRental] = useState<RentalItem | null>(null);
   const [selectedSale,   setSelectedSale]   = useState<SaleItem   | null>(null);
+  const { sales: agriSales } = useAgriStore();
 
   if (selectedRental) return <RentalDetailView item={selectedRental} onBack={() => setSelectedRental(null)} />;
   if (selectedSale)   return <SaleDetailView   item={selectedSale}   onBack={() => setSelectedSale(null)} />;
@@ -169,7 +171,7 @@ export function VendorHistory() {
     <div className="min-h-screen bg-background pb-8">
       <div className="px-5 pt-12 pb-5">
         <h2 className="text-foreground">History</h2>
-        <p className="text-sm text-muted-foreground mt-1">Rentals & sales overview</p>
+        <p className="text-sm text-muted-foreground mt-1">Rentals, drone sales & agri-inputs</p>
       </div>
 
       {/* Stats */}
@@ -230,6 +232,31 @@ export function VendorHistory() {
                   <p className="text-xs text-primary">View →</p>
                 </div>
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Agri-Inputs Sales */}
+        <div>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Agri-Inputs Sales</p>
+          <div className="space-y-2">
+            {agriSales.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-4">No agri-input sales yet</p>
+            ) : agriSales.map((item) => (
+              <div key={item.id}
+                className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-3 text-left">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Beaker className="w-5 h-5 text-green-700" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-foreground">{item.brand}</p>
+                  <p className="text-xs text-muted-foreground">{item.pilot} · {item.date}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{item.type} · {item.quantity} {item.unit}</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-sm font-semibold text-foreground">₹{item.amount.toLocaleString()}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
