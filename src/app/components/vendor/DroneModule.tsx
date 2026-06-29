@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Edit2, Eye, Trash2, Check, X, ChevronDown, ArrowLeft, Cpu, User, Phone, MapPin, Calendar, DollarSign } from "lucide-react";
+import { Search, Plus, Edit2, Eye, Trash2, Check, X, ChevronDown, ArrowLeft, Cpu, User, Phone, MapPin, Calendar, DollarSign, CreditCard, Package } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────
 type DroneCategory = "Agriculture" | "Survey" | "Inspection" | "Cinematic";
@@ -40,6 +40,108 @@ const buyerRequests = [
   { id: "BQ-101", buyer: "Suresh Agri Co.",   phone: "+91 94832 11209", offer: 80000, droneId: 1, message: "Interested in bulk purchase. Can discuss price." },
   { id: "BQ-102", buyer: "Ramesh Farms Ltd.", phone: "+91 90011 77332", offer: 52000, droneId: 2, message: "Ready to pay in full. Available this week." },
 ];
+
+const agriCatalog = {
+  pesticide: [
+    { brand: "Bayer Confidor 200 SL", unit: "L", pricePerUnit: 850 },
+    { brand: "Syngenta Polo 500", unit: "L", pricePerUnit: 720 },
+    { brand: "UPL Saaf", unit: "kg", pricePerUnit: 420 },
+    { brand: "Dhanuka Super D 45", unit: "L", pricePerUnit: 680 },
+  ],
+  fertilizer: [
+    { brand: "IFFCO Urea 46%", unit: "kg", pricePerUnit: 320 },
+    { brand: "Coromandel DAP", unit: "kg", pricePerUnit: 1450 },
+    { brand: "Mahadhan Potash", unit: "kg", pricePerUnit: 980 },
+    { brand: "NPK 19:19:19", unit: "kg", pricePerUnit: 1120 },
+  ],
+};
+
+// ── Agri-Inputs purchase ─────────────────────────────────────────────
+function AgriInputsPanel() {
+  const [inputType, setInputType] = useState<"pesticide" | "fertilizer">("pesticide");
+  const [brand, setBrand] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [paying, setPaying] = useState(false);
+  const [paid, setPaid] = useState(false);
+
+  const products = agriCatalog[inputType];
+  const selected = products.find((p) => p.brand === brand);
+  const qty = parseInt(quantity, 10) || 0;
+  const total = selected ? selected.pricePerUnit * qty : 0;
+
+  const handlePay = () => {
+    if (!selected || qty < 1) return;
+    setPaying(true);
+    setTimeout(() => { setPaying(false); setPaid(true); }, 1200);
+  };
+
+  if (paid) {
+    return (
+      <div className="bg-card border border-border rounded-2xl p-6 text-center space-y-3">
+        <div className="w-14 h-14 bg-secondary rounded-full flex items-center justify-center mx-auto">
+          <Check className="w-7 h-7 text-primary" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">Payment Successful!</p>
+        <p className="text-xs text-muted-foreground">{qty} {selected?.unit} of {brand} ordered</p>
+        <p className="text-sm font-semibold text-primary">₹{total.toLocaleString()}</p>
+        <button onClick={() => { setPaid(false); setBrand(""); setQuantity(""); }}
+          className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">New Order</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-secondary rounded-xl p-3 flex items-center gap-2">
+        <Package className="w-4 h-4 text-primary" />
+        <p className="text-xs text-muted-foreground">Purchase pesticides & fertilizers — select brand, quantity, then pay</p>
+      </div>
+
+      <div>
+        <label className="text-xs text-muted-foreground mb-2 block">Product Type</label>
+        <div className="flex gap-2">
+          {(["pesticide", "fertilizer"] as const).map((t) => (
+            <button key={t} onClick={() => { setInputType(t); setBrand(""); setQuantity(""); }}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-medium border capitalize ${inputType === t ? "border-primary bg-secondary text-primary" : "border-border text-muted-foreground"}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <SelectField label="Brand" value={brand} options={products.map((p) => p.brand)}
+        onChange={(v) => { setBrand(v); setQuantity(""); }} />
+
+      {selected && (
+        <div className="bg-muted rounded-xl px-3 py-2 text-xs flex justify-between">
+          <span className="text-muted-foreground">Unit price</span>
+          <span className="text-foreground font-medium">₹{selected.pricePerUnit}/{selected.unit}</span>
+        </div>
+      )}
+
+      <div>
+        <label className="text-xs text-muted-foreground mb-1 block">Quantity {selected ? `(${selected.unit})` : ""}</label>
+        <input type="number" min={1} placeholder="e.g. 10" value={quantity}
+          onChange={(e) => setQuantity(e.target.value.replace(/\D/g, ""))}
+          disabled={!brand}
+          className="w-full bg-input-background rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:ring-1 focus:ring-primary disabled:opacity-50" />
+      </div>
+
+      {total > 0 && (
+        <div className="bg-secondary rounded-xl p-4 flex items-center justify-between">
+          <span className="text-sm text-foreground">Total Amount</span>
+          <span className="text-lg font-semibold text-primary">₹{total.toLocaleString()}</span>
+        </div>
+      )}
+
+      <button onClick={handlePay} disabled={!brand || qty < 1 || paying}
+        className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium disabled:opacity-40">
+        <CreditCard className="w-4 h-4" />
+        {paying ? "Processing Payment…" : `Proceed to Payment${total > 0 ? ` — ₹${total.toLocaleString()}` : ""}`}
+      </button>
+    </div>
+  );
+}
 
 // ── Reusable SelectField ──────────────────────────────────────────────
 function SelectField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
@@ -235,7 +337,7 @@ function BuyersPanel({ drone, onClose }: { drone: SellDrone; onClose: () => void
 
 // ── Main DroneModule ──────────────────────────────────────────────────
 export function DroneModule() {
-  const [activeTab,    setActiveTab]    = useState<"rent"|"sell">("rent");
+  const [activeTab,    setActiveTab]    = useState<"rent"|"sell"|"inputs">("rent");
   const [statusFilter, setStatusFilter] = useState("All");
   const [search,       setSearch]       = useState("");
   const [rentDrones,   setRentDrones]   = useState<RentDrone[]>(initialRentDrones);
@@ -277,7 +379,7 @@ export function DroneModule() {
         <h2 className="text-foreground">Drones</h2>
         <div className="flex items-center gap-2 mt-4 bg-card border border-border rounded-xl px-3 py-2.5">
           <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          <input placeholder={`Search ${activeTab === "rent" ? "rental" : "sale"} drones…`} value={search}
+          <input placeholder={activeTab === "inputs" ? "Search agri-inputs…" : `Search ${activeTab === "rent" ? "rental" : "sale"} drones…`} value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground" />
         </div>
@@ -285,11 +387,15 @@ export function DroneModule() {
 
       {/* Tabs */}
       <div className="px-5 mb-4">
-        <div className="flex bg-secondary rounded-xl p-1 gap-1">
-          {(["rent","sell"] as const).map((t) => (
-            <button key={t} onClick={() => { setActiveTab(t); setStatusFilter("All"); setShowAddRent(false); setShowAddSell(false); }}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {t === "rent" ? "Rent Drone" : "Sell Drone"}
+        <div className="flex bg-secondary rounded-xl p-1 gap-1 overflow-x-auto">
+          {([
+            { id: "rent" as const, label: "Rent Drone" },
+            { id: "sell" as const, label: "Sell Drone" },
+            { id: "inputs" as const, label: "Agri-Inputs" },
+          ]).map((t) => (
+            <button key={t.id} onClick={() => { setActiveTab(t.id); setStatusFilter("All"); setShowAddRent(false); setShowAddSell(false); }}
+              className={`flex-1 min-w-[90px] py-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${activeTab === t.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+              {t.label}
             </button>
           ))}
         </div>
@@ -445,6 +551,9 @@ export function DroneModule() {
             ))}
           </>
         )}
+
+        {/* ── Pesticides & Fertilizers ── */}
+        {activeTab === "inputs" && <AgriInputsPanel />}
       </div>
     </div>
   );

@@ -51,14 +51,16 @@ function openMaps(location: string) {
   window.open(`https://maps.google.com/?q=${encodeURIComponent(location + ", Maharashtra, India")}`, "_blank");
 }
 
-function JobCard({ job, onUpdate, onCancel, onReschedule }: {
+function JobCard({ job, onUpdate, onCancel, onReschedule, rescheduleSent }: {
   job: ActiveJob;
   onUpdate: (id: string, u: Partial<ActiveJob>) => void;
   onCancel: (id: string) => void;
   onReschedule: (id: string) => void;
+  rescheduleSent: boolean;
 }) {
   const cfg = jobStatusConfig[job.jobStatus];
   const progress = job.autoProgress ?? 0;
+  const canReschedule = job.jobStatus === "active" || job.jobStatus === "today" || job.jobStatus === "upcoming";
 
   return (
     <div className={`bg-card border rounded-2xl p-4 ${job.jobStatus === "active" ? "border-primary/30 shadow-sm" : "border-border"}`}>
@@ -124,14 +126,30 @@ function JobCard({ job, onUpdate, onCancel, onReschedule }: {
         </button>
       )}
 
-      {(job.jobStatus === "today" || job.jobStatus === "upcoming") && (
-        <div className="flex gap-2">
-          <button onClick={() => onReschedule(job.id)} className="flex-1 flex items-center justify-center gap-1 py-2 border border-border rounded-xl text-xs text-foreground hover:bg-secondary">
-            <RefreshCw className="w-3 h-3" /> Reschedule
-          </button>
-          <button onClick={() => onCancel(job.id)} className="flex-1 flex items-center justify-center gap-1 py-2 border border-destructive/30 rounded-xl text-xs text-destructive hover:bg-destructive/5">
-            <XCircle className="w-3 h-3" /> Cancel
-          </button>
+      {(job.jobStatus === "today" || job.jobStatus === "upcoming" || job.jobStatus === "active") && (
+        <div className="space-y-2">
+          {rescheduleSent && (
+            <div className="flex items-center gap-2 bg-secondary rounded-xl p-2.5">
+              <CheckCircle className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+              <p className="text-xs text-primary font-medium">Reschedule request sent</p>
+            </div>
+          )}
+          {canReschedule && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => onReschedule(job.id)}
+                disabled={rescheduleSent}
+                className="flex-1 flex items-center justify-center gap-1 py-2 border border-border rounded-xl text-xs text-foreground hover:bg-secondary disabled:opacity-50"
+              >
+                <RefreshCw className="w-3 h-3" /> Reschedule
+              </button>
+              {(job.jobStatus === "today" || job.jobStatus === "upcoming") && (
+                <button onClick={() => onCancel(job.id)} className="flex-1 flex items-center justify-center gap-1 py-2 border border-destructive/30 rounded-xl text-xs text-destructive hover:bg-destructive/5">
+                  <XCircle className="w-3 h-3" /> Cancel
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -141,6 +159,7 @@ function JobCard({ job, onUpdate, onCancel, onReschedule }: {
 export function PilotActiveJobs() {
   const [jobs, setJobs] = useState<ActiveJob[]>(activeJobsList);
   const [toast, setToast] = useState("");
+  const [rescheduleSentIds, setRescheduleSentIds] = useState<Set<string>>(new Set());
 
   const updateJob = (id: string, updates: Partial<ActiveJob>) => {
     setJobs((p) => p.map((j) => (j.id === id ? { ...j, ...updates } : j)));
@@ -153,8 +172,11 @@ export function PilotActiveJobs() {
   };
 
   const handleReschedule = (id: string) => {
-    setToast("Reschedule request sent to farmer for approval");
-    setTimeout(() => setToast(""), 3000);
+    const job = jobs.find((j) => j.id === id);
+    if (!job) return;
+    setRescheduleSentIds((prev) => new Set(prev).add(id));
+    setToast("Reschedule request sent");
+    setTimeout(() => setToast(""), 4000);
   };
 
   useEffect(() => {
@@ -205,19 +227,19 @@ export function PilotActiveJobs() {
         {activeJobs.length > 0 && (
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">In Progress</p>
-            <div className="space-y-3">{activeJobs.map((j) => <JobCard key={j.id} job={j} onUpdate={updateJob} onCancel={handleCancel} onReschedule={handleReschedule} />)}</div>
+            <div className="space-y-3">{activeJobs.map((j) => <JobCard key={j.id} job={j} onUpdate={updateJob} onCancel={handleCancel} onReschedule={handleReschedule} rescheduleSent={rescheduleSentIds.has(j.id)} />)}</div>
           </div>
         )}
         {todayJobs.length > 0 && (
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Today's Jobs</p>
-            <div className="space-y-3">{todayJobs.map((j) => <JobCard key={j.id} job={j} onUpdate={updateJob} onCancel={handleCancel} onReschedule={handleReschedule} />)}</div>
+            <div className="space-y-3">{todayJobs.map((j) => <JobCard key={j.id} job={j} onUpdate={updateJob} onCancel={handleCancel} onReschedule={handleReschedule} rescheduleSent={rescheduleSentIds.has(j.id)} />)}</div>
           </div>
         )}
         {upcomingJobs.length > 0 && (
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Upcoming</p>
-            <div className="space-y-3">{upcomingJobs.map((j) => <JobCard key={j.id} job={j} onUpdate={updateJob} onCancel={handleCancel} onReschedule={handleReschedule} />)}</div>
+            <div className="space-y-3">{upcomingJobs.map((j) => <JobCard key={j.id} job={j} onUpdate={updateJob} onCancel={handleCancel} onReschedule={handleReschedule} rescheduleSent={rescheduleSentIds.has(j.id)} />)}</div>
           </div>
         )}
       </div>

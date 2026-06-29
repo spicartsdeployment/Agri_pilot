@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, X, Check, MapPin, Star, Cpu, User, ChevronLeft, ChevronRight, CreditCard, Clock, AlertTriangle } from "lucide-react";
 import { ADVANCE_PERCENT, DRONE_RENTAL_FREE_CANCEL_MS, DRONE_RENTAL_MIN_HOURS, DRONE_RENTAL_MAX_DAYS } from "../shared/dgcaUtils";
 
@@ -151,6 +151,7 @@ export function PilotDrone() {
   const [advancePaid, setAdvancePaid] = useState(false);
   const [payingAdvance, setPayingAdvance] = useState(false);
   const [requests,       setRequests]       = useState(myDroneRequests);
+  const [cancelTick,     setCancelTick]     = useState(0);
 
   const filtered = nearbyDrones.filter((d) =>
     !search || d.model.toLowerCase().includes(search.toLowerCase()) || d.name.toLowerCase().includes(search.toLowerCase())
@@ -192,8 +193,13 @@ export function PilotDrone() {
   };
 
   const cancelRental = () => {
-    if (!confirmedAt || Date.now() - confirmedAt > DRONE_RENTAL_FREE_CANCEL_MS) {
-      alert("Free cancellation window expired. Repeated cancellations affect your rating.");
+    if (!confirmedAt || Date.now() - confirmedAt > DRONE_RENTAL_FREE_CANCEL_MS) return;
+    if (bookingDrone) {
+      const range = buildRange(fromDate, toDate || fromDate);
+      setMyBookedDates((prev) => ({
+        ...prev,
+        [bookingDrone.id]: (prev[bookingDrone.id] || []).filter((d) => !range.includes(d)),
+      }));
     }
     resetForm();
   };
@@ -206,8 +212,14 @@ export function PilotDrone() {
 
   const totalCost = bookingDrone ? days * bookingDrone.pricePerDay : 0;
   const advanceAmount = Math.round(totalCost * ADVANCE_PERCENT);
-  const canFreeCancel = confirmedAt ? Date.now() - confirmedAt <= DRONE_RENTAL_FREE_CANCEL_MS : false;
+  const canFreeCancel = confirmedAt && cancelTick >= 0 ? Date.now() - confirmedAt <= DRONE_RENTAL_FREE_CANCEL_MS : false;
   const cancelMinsLeft = confirmedAt ? Math.max(0, Math.ceil((DRONE_RENTAL_FREE_CANCEL_MS - (Date.now() - confirmedAt)) / 60000)) : 0;
+
+  useEffect(() => {
+    if (!bookingConfirmed || !confirmedAt) return;
+    const interval = setInterval(() => setCancelTick((t) => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, [bookingConfirmed, confirmedAt]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -283,7 +295,13 @@ export function PilotDrone() {
                   {!canFreeCancel && confirmedAt && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground"><AlertTriangle className="w-3.5 h-3.5" /> 10-min free cancel window expired</div>
                   )}
-                  <button onClick={resetForm} className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">Done</button>
+                  <button onClick={resetForm} disabled={!advancePaid}
+                    className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed">
+                    Done
+                  </button>
+                  {!advancePaid && (
+                    <p className="text-[10px] text-muted-foreground">Complete 20% advance payment to finish</p>
+                  )}
                 </div>
               ) : (
                 <>

@@ -28,7 +28,7 @@ const registeredPilots = [
 const initialProfile = {
   name: "TechDrone Solutions", phone: "+91 98765 43212", email: "info@techdrone.in",
   location: "Pune, Maharashtra", gstin: "27AABCT1332L1ZQ",
-  totalDrones: "8", yearsActive: "4", avatar: "TS",
+  totalDrones: "8", totalPilots: "3", yearsActive: "4", avatar: "TS",
 };
 
 const privacySections = [
@@ -125,8 +125,8 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
             <p className="text-xs text-muted-foreground">Drone Vendor · {profile.location}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {[["Total Drones", profile.totalDrones], ["Years Active", profile.yearsActive]].map(([l, v]) => (
+          <div className="grid grid-cols-3 gap-3">
+            {[["Total Drones", profile.totalDrones], ["Pilots", profile.totalPilots], ["Years Active", profile.yearsActive]].map(([l, v]) => (
               <div key={l} className="bg-secondary rounded-xl p-3 text-center">
                 <p className="text-sm font-semibold text-primary">{v}</p>
                 <p className="text-xs text-muted-foreground">{l}</p>
@@ -142,6 +142,7 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
               { icon: <MapPin className="w-4 h-4" />,   label: "Location",       key: "location",    type: "text" },
               { icon: <Shield className="w-4 h-4" />,   label: "GSTIN",          key: "gstin",       type: "text" },
               { icon: <Cpu className="w-4 h-4" />,      label: "Total Drones",   key: "totalDrones", type: "number" },
+              { icon: <User className="w-4 h-4" />,     label: "Pilots Under Vendor", key: "totalPilots", type: "number" },
               { icon: <Calendar className="w-4 h-4" />, label: "Years Active",   key: "yearsActive", type: "number" },
             ].map(({ icon, label, key, type }, i) => (
               <div key={key} className={`flex items-center gap-3 p-4 ${i > 0 ? "border-t border-border" : ""}`}>
@@ -235,7 +236,7 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
           <div className="flex gap-2">
             <input type="text" value={newPilotName} onChange={(e) => setNewPilotName(e.target.value)} placeholder="Pilot name"
               className="flex-1 bg-input-background rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary" />
-            <button onClick={() => { if (newPilotName) { setPilots([...pilots, { id: `P${Date.now()}`, name: newPilotName, license: "Pending", status: "Active", jobs: 0 }]); setNewPilotName(""); } }}
+            <button onClick={() => { if (newPilotName) { setPilots([...pilots, { id: `P${Date.now()}`, name: newPilotName, license: "Pending", status: "Active", jobs: 0 }]); setNewPilotName(""); setProfile((p) => ({ ...p, totalPilots: String(pilots.length + 1) })); } }}
               className="bg-primary text-primary-foreground px-4 rounded-xl text-sm font-medium">Add</button>
           </div>
         </div>
