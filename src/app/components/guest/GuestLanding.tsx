@@ -14,7 +14,7 @@ type AuthIntent = "farmer" | "pilot" | null;
 
 interface GuestLandingProps {
   onLogin: (role: "farmer" | "pilot" | "vendor") => void;
-  onSignUp: (role?: "farmer" | "pilot") => void;
+  onSignUp: (role?: "farmer" | "pilot" | "vendor") => void;
 }
 
 const navItems = [

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, Target, Eye, BookOpen } from "lucide-react";
-import { stats, testimonials, partnerLogos, aboutGoals } from "./guestData";
+import { stats, testimonials, aboutGoals } from "./guestData";
 
 function AnimatedCounter({ value, suffix }: { value: number; suffix: string }) {
   const [count, setCount] = useState(0);
@@ -106,18 +106,6 @@ export function GuestAbout() {
                 <p className="text-xs font-semibold text-foreground">{t.name}</p>
                 <p className="text-[10px] text-muted-foreground">{t.location}</p>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Partners */}
-      <section>
-        <h2 className="text-xl font-bold text-foreground mb-4 text-center">Our Partners</h2>
-        <div className="flex flex-wrap justify-center gap-4">
-          {partnerLogos.map((p) => (
-            <div key={p} className="px-5 py-3 bg-secondary rounded-xl text-xs font-semibold text-muted-foreground border border-border">
-              {p}
             </div>
           ))}
         </div>

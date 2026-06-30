@@ -84,7 +84,11 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
   const [planToast,   setPlanToast]   = useState("");
   const [openFaq,     setOpenFaq]     = useState<number | null>(null);
   const [pilots,      setPilots]      = useState(registeredPilots);
-  const [newPilotName, setNewPilotName] = useState("");
+  const [showAddPilot, setShowAddPilot] = useState(false);
+  const [newPilotForm, setNewPilotForm] = useState({
+    name: "", phone: "", email: "", aadhaar: "", dgcaFile: "", aadhaarFile: "",
+  });
+  const [pilotAddedToast, setPilotAddedToast] = useState("");
   const [certStatus,  setCertStatus]  = useState({ pesticide: false, fertilizer: false, gst: false });
   const [selectedPilotDetail, setSelectedPilotDetail] = useState<VendorPilot | null>(null);
 
@@ -282,11 +286,36 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
 
   // ── Multi-Pilot Management ───────────────────────────────────────
   if (page === "pilots") {
+    const handleFile = (key: "dgcaFile" | "aadhaarFile", file: File | null) => {
+      if (file) setNewPilotForm((f) => ({ ...f, [key]: file.name }));
+    };
+
+    const createPilot = () => {
+      const { name, phone, email, aadhaar, dgcaFile, aadhaarFile } = newPilotForm;
+      if (!name || !phone || !email || !aadhaar || !dgcaFile || !aadhaarFile) {
+        setPilotAddedToast("Please fill all fields and upload documents");
+        setTimeout(() => setPilotAddedToast(""), 2500);
+        return;
+      }
+      setPilots([...pilots, {
+        id: `P${Date.now()}`, name, license: `DL-PENDING-${phone.slice(-4)}`,
+        status: "Active" as const, jobs: 0,
+      }]);
+      setProfile((p) => ({ ...p, totalPilots: String(pilots.length + 1) }));
+      setNewPilotForm({ name: "", phone: "", email: "", aadhaar: "", dgcaFile: "", aadhaarFile: "" });
+      setShowAddPilot(false);
+      setPilotAddedToast(`${name} linked to your vendor account ✓`);
+      setTimeout(() => setPilotAddedToast(""), 3000);
+    };
+
     return (
       <div className="min-h-screen bg-background pb-8">
         <BackHeader title="Manage Pilots" onBack={() => setPage(null)} />
         <div className="px-5 space-y-4">
-          <p className="text-xs text-muted-foreground">Add and manage pilots under your organization. Booking requests route to registered pilots.</p>
+          <p className="text-xs text-muted-foreground">Add pilots with DGCA certificate & Aadhaar — accounts are created and linked to your vendor.</p>
+          {pilotAddedToast && (
+            <div className="bg-secondary border border-primary/30 rounded-xl px-3 py-2 text-xs text-primary font-medium">{pilotAddedToast}</div>
+          )}
           {pilots.map((p) => (
             <div key={p.id} className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
               <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-semibold">{p.name[0]}</div>
@@ -297,12 +326,52 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
               <span className={`text-xs px-2 py-0.5 rounded-full ${p.status === "Active" ? "bg-secondary text-primary" : "bg-muted text-muted-foreground"}`}>{p.status}</span>
             </div>
           ))}
-          <div className="flex gap-2">
-            <input type="text" value={newPilotName} onChange={(e) => setNewPilotName(e.target.value)} placeholder="Pilot name"
-              className="flex-1 bg-input-background rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary" />
-            <button onClick={() => { if (newPilotName) { setPilots([...pilots, { id: `P${Date.now()}`, name: newPilotName, license: "Pending", status: "Active", jobs: 0 }]); setNewPilotName(""); setProfile((p) => ({ ...p, totalPilots: String(pilots.length + 1) })); } }}
-              className="bg-primary text-primary-foreground px-4 rounded-xl text-sm font-medium">Add</button>
-          </div>
+
+          {!showAddPilot ? (
+            <button onClick={() => setShowAddPilot(true)}
+              className="w-full border-2 border-dashed border-primary/40 text-primary rounded-2xl py-4 text-sm font-medium hover:bg-secondary">
+              + Add New Pilot
+            </button>
+          ) : (
+            <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+              <p className="text-sm font-semibold text-foreground">Create Pilot Account</p>
+              {[
+                ["Full Name", "name", "text"],
+                ["Phone Number", "phone", "tel"],
+                ["Email", "email", "email"],
+                ["Aadhaar Number", "aadhaar", "text"],
+              ].map(([label, key, type]) => (
+                <div key={key}>
+                  <label className="text-[10px] text-muted-foreground mb-1 block">{label}</label>
+                  <input type={type} value={newPilotForm[key as keyof typeof newPilotForm]}
+                    onChange={(e) => setNewPilotForm({ ...newPilotForm, [key]: e.target.value })}
+                    className="w-full bg-input-background rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary" />
+                </div>
+              ))}
+              <div>
+                <label className="text-[10px] text-muted-foreground mb-1 block">DGCA Certificate (upload)</label>
+                <label className="flex items-center gap-2 bg-input-background rounded-xl px-3 py-2.5 cursor-pointer">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span className="text-xs text-foreground flex-1 truncate">{newPilotForm.dgcaFile || "Choose file…"}</span>
+                  <input type="file" accept="image/*,.pdf" className="hidden"
+                    onChange={(e) => handleFile("dgcaFile", e.target.files?.[0] ?? null)} />
+                </label>
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground mb-1 block">Aadhaar Card (upload)</label>
+                <label className="flex items-center gap-2 bg-input-background rounded-xl px-3 py-2.5 cursor-pointer">
+                  <Shield className="w-4 h-4 text-primary" />
+                  <span className="text-xs text-foreground flex-1 truncate">{newPilotForm.aadhaarFile || "Choose file…"}</span>
+                  <input type="file" accept="image/*,.pdf" className="hidden"
+                    onChange={(e) => handleFile("aadhaarFile", e.target.files?.[0] ?? null)} />
+                </label>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button onClick={() => setShowAddPilot(false)} className="flex-1 border border-border rounded-xl py-2.5 text-sm">Cancel</button>
+                <button onClick={createPilot} className="flex-1 bg-primary text-primary-foreground rounded-xl py-2.5 text-sm font-medium">Create & Link Pilot</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

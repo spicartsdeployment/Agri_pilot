@@ -9,8 +9,8 @@ const rentalRequests = [
 ];
 
 const farmerBookingRequests = [
-  { id: "FB-201", farmer: "Rajesh Kumar", farm: "North Field", service: "Pesticide Spray", acres: 12, pilot: "Arjun Singh", date: "Jun 14, 2026", amount: 5400, status: "pending" },
-  { id: "FB-202", farmer: "Suresh Patel", farm: "West Farm", service: "Fertilizer Spray", acres: 20, pilot: "Kiran Rao", date: "Jun 15, 2026", amount: 9000, status: "pending" },
+  { id: "FB-201", farmer: "Rajesh Kumar", farm: "North Field", service: "Pesticide Spray", acres: 12, pilot: "", date: "Jun 14, 2026", amount: 5400, status: "pending" },
+  { id: "FB-202", farmer: "Suresh Patel", farm: "West Farm", service: "Fertilizer Spray", acres: 20, pilot: "", date: "Jun 15, 2026", amount: 9000, status: "pending" },
 ];
 
 const vendorProfile = {
@@ -190,12 +190,18 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
 export function VendorHome() {
   const [requests, setRequests] = useState(rentalRequests);
   const [farmerRequests, setFarmerRequests] = useState(farmerBookingRequests);
+  const [pilotSelections, setPilotSelections] = useState<Record<string, string>>({});
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const handleAction = (id: string, action: "accepted" | "declined") =>
     setRequests(requests.map((r) => r.id === id ? { ...r, status: action } : r));
-  const handleFarmerAction = (id: string, action: "accepted" | "declined") =>
-    setFarmerRequests(farmerRequests.map((r) => r.id === id ? { ...r, status: action } : r));
+  const handleFarmerAction = (id: string, action: "accepted" | "declined") => {
+    const pilot = pilotSelections[id];
+    if (action === "accepted" && !pilot) return;
+    setFarmerRequests(farmerRequests.map((r) =>
+      r.id === id ? { ...r, status: action, pilot: action === "accepted" ? pilot : r.pilot } : r
+    ));
+  };
   const pending = requests.filter((r) => r.status === "pending");
   const pendingFarmer = farmerRequests.filter((r) => r.status === "pending");
 
@@ -306,7 +312,7 @@ export function VendorHome() {
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-xs font-medium text-foreground">{req.farmer} · {req.farm}</p>
-                  <p className="text-xs text-muted-foreground">Pilot: {req.pilot}</p>
+                  {req.pilot && <p className="text-xs text-muted-foreground">Pilot: {req.pilot}</p>}
                 </div>
                 <span className="text-xs font-mono text-muted-foreground">{req.id}</span>
               </div>
@@ -317,10 +323,28 @@ export function VendorHome() {
                 <div><span className="text-muted-foreground">Amount</span><p className="text-primary font-semibold">₹{req.amount.toLocaleString()}</p></div>
               </div>
               {req.status === "pending" && (
-                <div className="flex gap-2">
-                  <button onClick={() => handleFarmerAction(req.id, "declined")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-border rounded-xl text-xs hover:bg-secondary"><X className="w-3.5 h-3.5" /> Decline</button>
-                  <button onClick={() => handleFarmerAction(req.id, "accepted")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs hover:opacity-90"><Check className="w-3.5 h-3.5" /> Route to Pilot</button>
-                </div>
+                <>
+                  <div className="mb-3">
+                    <label className="text-[10px] text-muted-foreground mb-1.5 block">Assign Pilot Under Vendor</label>
+                    <select
+                      value={pilotSelections[req.id] || ""}
+                      onChange={(e) => setPilotSelections({ ...pilotSelections, [req.id]: e.target.value })}
+                      className="w-full bg-input-background border border-border rounded-xl px-3 py-2.5 text-xs text-foreground outline-none focus:ring-1 focus:ring-primary"
+                    >
+                      <option value="">Select a pilot…</option>
+                      {vendorPilots.filter((p) => p.status === "Active").map((p) => (
+                        <option key={p.id} value={p.name}>{p.name} · ★ {p.rating}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleFarmerAction(req.id, "declined")} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-border rounded-xl text-xs hover:bg-secondary"><X className="w-3.5 h-3.5" /> Decline</button>
+                    <button onClick={() => handleFarmerAction(req.id, "accepted")} disabled={!pilotSelections[req.id]}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs hover:opacity-90 disabled:opacity-40">
+                      <Check className="w-3.5 h-3.5" /> Route to Pilot
+                    </button>
+                  </div>
+                </>
               )}
               {req.status !== "pending" && (
                 <span className={`text-xs px-2 py-0.5 rounded-full ${req.status === "accepted" ? "bg-secondary text-primary" : "bg-muted text-muted-foreground"}`}>{req.status}</span>

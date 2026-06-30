@@ -4,13 +4,13 @@ import {
   Tractor, Plane, Store, Chrome,
 } from "lucide-react";
 
-type AuthRole = "farmer" | "pilot";
+type AuthRole = "farmer" | "pilot" | "vendor";
 type AuthMode = "login" | "register";
 type OtpStep = "form" | "otp" | "done";
 
 interface GuestLoginProps {
   onLogin: (role: "farmer" | "pilot" | "vendor") => void;
-  onSignUp: (role?: AuthRole) => void;
+  onSignUp: (role?: "farmer" | "pilot" | "vendor") => void;
   onBack?: () => void;
   initialRole?: AuthRole;
   initialMode?: AuthMode;
@@ -85,8 +85,13 @@ export function GuestLogin({ onLogin, onSignUp, onBack, initialRole = "farmer", 
 
   const handleLogin = () => {
     const account = demoAccounts.find((a) => a.phone === phone && a.password === password);
-    if (account) onLogin(account.loginRole);
-    else setError("Invalid phone number or password.");
+    if (account) {
+      onLogin(role === "vendor" ? "vendor" : account.loginRole);
+    } else if (role === "vendor" && phone === "9876543212" && password === "vendor123") {
+      onLogin("vendor");
+    } else {
+      setError("Invalid phone number or password.");
+    }
   };
 
   return (
@@ -116,15 +121,18 @@ export function GuestLogin({ onLogin, onSignUp, onBack, initialRole = "farmer", 
         </div>
 
         {/* Role selector */}
-        <div className="grid grid-cols-2 gap-2 mb-6">
+        <div className="grid grid-cols-3 gap-2 mb-6">
           {([
-            { id: "farmer" as const, label: mode === "login" ? "Login as Farmer" : "Register as Farmer", icon: Tractor },
-            { id: "pilot" as const, label: mode === "login" ? "Login as Pilot" : "Register as Pilot", icon: Plane },
+            { id: "farmer" as const, label: mode === "login" ? "Farmer" : "Farmer", icon: Tractor },
+            { id: "pilot" as const, label: mode === "login" ? "Pilot" : "Pilot", icon: Plane },
+            { id: "vendor" as const, label: mode === "login" ? "Vendor" : "Vendor", icon: Store },
           ]).map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setRole(id)}
-              className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${role === id ? "border-green-600 bg-green-50" : "border-border bg-card hover:border-green-200"}`}>
-              <Icon className={`w-6 h-6 ${role === id ? "text-green-700" : "text-muted-foreground"}`} />
-              <span className={`text-[10px] font-semibold text-center leading-tight ${role === id ? "text-green-700" : "text-muted-foreground"}`}>{label}</span>
+              className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all ${role === id ? "border-green-600 bg-green-50" : "border-border bg-card hover:border-green-200"}`}>
+              <Icon className={`w-5 h-5 ${role === id ? "text-green-700" : "text-muted-foreground"}`} />
+              <span className={`text-[9px] font-semibold text-center leading-tight ${role === id ? "text-green-700" : "text-muted-foreground"}`}>
+                {mode === "login" ? `Login as ${label}` : `Register as ${label}`}
+              </span>
             </button>
           ))}
         </div>
@@ -166,7 +174,7 @@ export function GuestLogin({ onLogin, onSignUp, onBack, initialRole = "farmer", 
 
         {/* Social login */}
         <div className="mt-5 space-y-2">
-          <button onClick={() => onLogin(role === "pilot" ? "pilot" : "farmer")}
+          <button onClick={() => onLogin(role === "pilot" ? "pilot" : role === "vendor" ? "vendor" : "farmer")}
             className="w-full flex items-center justify-center gap-2 border border-border bg-white rounded-xl py-3 text-sm font-medium hover:bg-secondary transition-colors">
             <Chrome className="w-4 h-4" /> Continue with Google
           </button>

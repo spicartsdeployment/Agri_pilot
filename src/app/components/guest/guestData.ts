@@ -60,7 +60,7 @@ export const guestServices: GuestService[] = [
   {
     id: "crop-spray",
     title: "Crop Spraying",
-    image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=800&h=500&fit=crop",
     description: "Uniform aerial application across large fields with minimal crop damage and reduced labour costs.",
     benefits: ["Even coverage", "Faster than manual", "Less crop trampling"],
     crops: "Wheat, Rice, Cotton, Soybean",
@@ -70,7 +70,7 @@ export const guestServices: GuestService[] = [
   {
     id: "pesticide",
     title: "Pesticide Spraying",
-    image: "https://images.unsplash.com/photo-1574943320322-7bc1a4a50893?w=800&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=500&fit=crop",
     description: "DGCA-compliant pilots apply pesticides with calibrated droplet size and drift control.",
     benefits: ["Certified pilots", "Reduced chemical waste", "Safe handling"],
     crops: "Vegetables, Pulses, Horticulture",
@@ -110,7 +110,7 @@ export const guestServices: GuestService[] = [
   {
     id: "ndvi",
     title: "NDVI Mapping",
-    image: "https://images.unsplash.com/photo-1586771107445-d3ca838129ff?w=800&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1532619675608-a97d8f9fff52?w=800&h=500&fit=crop",
     description: "Multispectral NDVI maps highlight stressed zones for precision intervention.",
     benefits: ["Zone-wise insights", "Data-driven decisions", "Exportable maps"],
     crops: "Wheat, Rice, Horticulture",
@@ -130,7 +130,7 @@ export const guestServices: GuestService[] = [
   {
     id: "land-map",
     title: "Land Mapping",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1500595046743-d52fa8c41348?w=800&h=500&fit=crop",
     description: "Boundary demarcation and contour mapping for irrigation and land records.",
     benefits: ["Clear boundaries", "Contour lines", "GIS export"],
     crops: "N/A — land focused",
@@ -150,7 +150,7 @@ export const guestServices: GuestService[] = [
   {
     id: "orchard",
     title: "Orchard Spraying",
-    image: "https://images.unsplash.com/photo-1595846519845-68bb3376c617?w=800&h=500&fit=crop",
+    image: "https://images.unsplash.com/photo-1605027990120-d2f22659b10e?w=800&h=500&fit=crop",
     description: "Specialized spraying for mango, citrus, and other orchard crops with canopy penetration.",
     benefits: ["Canopy penetration", "Reduced ladder work", "Uniform dosing"],
     crops: "Mango, Citrus, Grapes",
@@ -174,51 +174,99 @@ export type GuestDrone = {
   name: string;
   manufacturer: string;
   image: string;
+  imageFallback?: string;
   capacity: string;
   sprayWidth: string;
   batteryLife: string;
   coveragePerHour: string;
   pricePerDay: number;
+  salePrice?: number;
+  listingType: "rent" | "sale";
   vendorRating: number;
   available: boolean;
   category: string;
   wishlisted?: boolean;
 };
 
+const img = (local: string, fallback: string) => ({ image: local, imageFallback: fallback });
+
 export const guestDrones: GuestDrone[] = [
   {
-    id: "D1", name: "AgriStar X500", manufacturer: "DJI", image: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&h=400&fit=crop",
-    capacity: "40 L", sprayWidth: "7 m", batteryLife: "22 min", coveragePerHour: "10 ac/hr",
-    pricePerDay: 2400, vendorRating: 4.8, available: true, category: "Spray",
+    id: "D1", name: "DJI AGRAS T100", manufacturer: "DJI",
+    ...img("/drones/dji-agras-t100.jpg", "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&h=400&fit=crop"),
+    capacity: "100 L", sprayWidth: "11 m", batteryLife: "18 min", coveragePerHour: "18 ac/hr",
+    pricePerDay: 4500, vendorRating: 4.9, available: true, category: "Agricultural", listingType: "rent",
   },
   {
-    id: "D2", name: "CropFlyer Pro", manufacturer: "XAG", image: "https://images.unsplash.com/photo-1508614589041-895b88991dcc?w=600&h=400&fit=crop",
-    capacity: "50 L", sprayWidth: "8 m", batteryLife: "25 min", coveragePerHour: "12 ac/hr",
-    pricePerDay: 3000, vendorRating: 4.9, available: true, category: "Spray",
+    id: "D2", name: "XAG P150 Max", manufacturer: "XAG",
+    ...img("/drones/xag-p150-max.jpg", "https://images.unsplash.com/photo-1508614589041-895b88991dcc?w=600&h=400&fit=crop"),
+    capacity: "50 L", sprayWidth: "9 m", batteryLife: "25 min", coveragePerHour: "14 ac/hr",
+    pricePerDay: 3200, vendorRating: 4.9, available: true, category: "Agricultural", listingType: "rent",
   },
   {
-    id: "D3", name: "SurveyDrone HD", manufacturer: "DJI", image: "https://images.unsplash.com/photo-1527977966376-1c8408f11f99?w=600&h=400&fit=crop",
-    capacity: "N/A", sprayWidth: "N/A", batteryLife: "35 min", coveragePerHour: "40 ac/hr",
-    pricePerDay: 3500, vendorRating: 4.7, available: true, category: "Survey",
+    id: "D3", name: "DJI MAVIC 3M", manufacturer: "DJI",
+    ...img("/drones/dji-mavic-3m.jpg", "https://images.unsplash.com/photo-1527977966376-1c8408f11f99?w=600&h=400&fit=crop"),
+    capacity: "N/A", sprayWidth: "N/A", batteryLife: "43 min", coveragePerHour: "50 ac/hr",
+    pricePerDay: 3800, vendorRating: 4.8, available: true, category: "Survey", listingType: "rent",
   },
   {
-    id: "D4", name: "SprayMaster 8L", manufacturer: "DJI", image: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&h=400&fit=crop",
-    capacity: "20 L", sprayWidth: "5 m", batteryLife: "18 min", coveragePerHour: "6 ac/hr",
-    pricePerDay: 1800, vendorRating: 4.6, available: false, category: "Spray",
+    id: "D4", name: "DJI AGRAS T10", manufacturer: "DJI",
+    ...img("/drones/dji-agras-t10.jpg", "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&h=400&fit=crop"),
+    capacity: "10 L", sprayWidth: "5 m", batteryLife: "18 min", coveragePerHour: "6 ac/hr",
+    pricePerDay: 1800, vendorRating: 4.6, available: false, category: "Agricultural", listingType: "rent",
   },
   {
-    id: "D5", name: "OrchardSpray Pro", manufacturer: "Yamaha", image: "https://images.unsplash.com/photo-1508614589041-895b88991dcc?w=600&h=400&fit=crop",
-    capacity: "30 L", sprayWidth: "6 m", batteryLife: "20 min", coveragePerHour: "5 ac/hr",
-    pricePerDay: 2800, vendorRating: 4.5, available: true, category: "Orchard",
+    id: "D5", name: "EAVision J150", manufacturer: "EAVision",
+    ...img("/drones/eavision-j150.jpg", "https://images.unsplash.com/photo-1605027990120-d2f22659b10e?w=600&h=400&fit=crop"),
+    capacity: "30 L", sprayWidth: "7 m", batteryLife: "22 min", coveragePerHour: "6 ac/hr",
+    pricePerDay: 2900, vendorRating: 4.7, available: true, category: "Orchard", listingType: "rent",
   },
   {
-    id: "D6", name: "MapFly M300", manufacturer: "DJI", image: "https://images.unsplash.com/photo-1527977966376-1c8408f11f99?w=600&h=400&fit=crop",
-    capacity: "N/A", sprayWidth: "N/A", batteryLife: "40 min", coveragePerHour: "50 ac/hr",
-    pricePerDay: 4200, vendorRating: 4.9, available: true, category: "Mapping",
+    id: "D6", name: "DJI TERRA", manufacturer: "DJI",
+    ...img("/drones/dji-terra.jpg", "https://images.unsplash.com/photo-1500595046743-d52fa8c41348?w=600&h=400&fit=crop"),
+    capacity: "N/A", sprayWidth: "N/A", batteryLife: "N/A", coveragePerHour: "100 ac/hr",
+    pricePerDay: 4200, vendorRating: 4.9, available: true, category: "Mapping", listingType: "rent",
+  },
+  // ── Drone Sales ──
+  {
+    id: "S1", name: "DJI AGRAS T40", manufacturer: "DJI",
+    ...img("/drones/dji-agras-t100.jpg", "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&h=400&fit=crop"),
+    capacity: "40 L", sprayWidth: "7 m", batteryLife: "22 min", coveragePerHour: "12 ac/hr",
+    pricePerDay: 0, salePrice: 485000, vendorRating: 4.9, available: true, category: "Agricultural", listingType: "sale",
+  },
+  {
+    id: "S2", name: "DJI Mini 4 Pro", manufacturer: "DJI",
+    ...img("/drones/dji-mini-4-pro.jpg", "https://images.unsplash.com/photo-1527977966376-1c8408f11f99?w=600&h=400&fit=crop"),
+    capacity: "N/A", sprayWidth: "N/A", batteryLife: "34 min", coveragePerHour: "N/A",
+    pricePerDay: 0, salePrice: 112000, vendorRating: 4.8, available: true, category: "Cinematic", listingType: "sale",
+  },
+  {
+    id: "S3", name: "DJI FPV Combo", manufacturer: "DJI",
+    ...img("/drones/gopro-karma.jpg", "https://images.unsplash.com/photo-1508614589041-895b88991dcc?w=600&h=400&fit=crop"),
+    capacity: "N/A", sprayWidth: "N/A", batteryLife: "20 min", coveragePerHour: "N/A",
+    pricePerDay: 0, salePrice: 135000, vendorRating: 4.7, available: true, category: "Action", listingType: "sale",
+  },
+  {
+    id: "S4", name: "Wing Delivery Drone", manufacturer: "Wing",
+    ...img("/drones/wing-delivery.jpg", "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&h=400&fit=crop"),
+    capacity: "3 kg payload", sprayWidth: "N/A", batteryLife: "30 min", coveragePerHour: "N/A",
+    pricePerDay: 0, salePrice: 220000, vendorRating: 4.5, available: true, category: "Delivery", listingType: "sale",
+  },
+  {
+    id: "S5", name: "DJI M350 RTK", manufacturer: "DJI",
+    ...img("/drones/dji-mavic-3m.jpg", "https://images.unsplash.com/photo-1527977966376-1c8408f11f99?w=600&h=400&fit=crop"),
+    capacity: "N/A", sprayWidth: "N/A", batteryLife: "55 min", coveragePerHour: "60 ac/hr",
+    pricePerDay: 0, salePrice: 520000, vendorRating: 4.9, available: true, category: "Inspection", listingType: "sale",
+  },
+  {
+    id: "S6", name: "XAG P100 Pro", manufacturer: "XAG",
+    ...img("/drones/xag-p150-max.jpg", "https://images.unsplash.com/photo-1508614589041-895b88991dcc?w=600&h=400&fit=crop"),
+    capacity: "40 L", sprayWidth: "8 m", batteryLife: "24 min", coveragePerHour: "11 ac/hr",
+    pricePerDay: 0, salePrice: 395000, vendorRating: 4.8, available: true, category: "Agricultural", listingType: "sale",
   },
 ];
 
-export const droneCategories = ["All", "Spray", "Survey", "Orchard", "Mapping"];
+export const droneCategories = ["All", "Agricultural", "Survey", "Orchard", "Mapping", "Cinematic", "Action", "Delivery", "Inspection"];
 
 export const stats = [
   { label: "Farmers Served", value: 12500, suffix: "+" },

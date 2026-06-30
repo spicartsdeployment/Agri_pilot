@@ -17,14 +17,58 @@ type MapWithPinsProps = {
 
 const DEFAULT_BBOX: [number, number, number, number] = [79.05, 21.08, 79.25, 21.28];
 
-export function MapWithPins({ pins, bbox = DEFAULT_BBOX, height = 180, title, legend, fullBleed }: MapWithPinsProps) {
-  const [minLon, minLat, maxLon, maxLat] = bbox;
-  const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${minLon}%2C${minLat}%2C${maxLon}%2C${maxLat}&layer=mapnik`;
+const MARKER_COLORS = ["red", "blue", "green", "yellow", "orange", "purple"] as const;
 
-  const toPosition = (lat: number, lng: number) => ({
-    left: `${Math.min(96, Math.max(4, ((lng - minLon) / (maxLon - minLon)) * 100))}%`,
-    top: `${Math.min(92, Math.max(8, ((maxLat - lat) / (maxLat - minLat)) * 100))}%`,
-  });
+function pinColorToMarker(color: string, index: number): string {
+  const map: Record<string, string> = {
+    "#16a34a": "green",
+    "#374151": "red",
+    "#0369a1": "blue",
+    "#f59e0b": "orange",
+    green: "green",
+    red: "red",
+    blue: "blue",
+  };
+  return map[color] || MARKER_COLORS[index % MARKER_COLORS.length];
+}
+
+function computeZoom(pins: MapPin[], bbox: [number, number, number, number]): number {
+  if (pins.length === 0) return 11;
+  const lats = pins.map((p) => p.lat);
+  const lngs = pins.map((p) => p.lng);
+  const latSpan = Math.max(...lats) - Math.min(...lats);
+  const lngSpan = Math.max(...lngs) - Math.min(...lngs);
+  const span = Math.max(latSpan, lngSpan, 0.01);
+  const [, minLat, , maxLat] = bbox;
+  const bboxSpan = Math.max(maxLat - minLat, bbox[2] - bbox[0]);
+  const effective = Math.max(span, bboxSpan * 0.3);
+  if (effective > 0.4) return 9;
+  if (effective > 0.2) return 10;
+  if (effective > 0.1) return 11;
+  if (effective > 0.05) return 12;
+  return 13;
+}
+
+function buildStaticMapUrl(pins: MapPin[], bbox: [number, number, number, number], height: number): string {
+  const [minLon, minLat, maxLon, maxLat] = bbox;
+  const centerLat = pins.length
+    ? pins.reduce((s, p) => s + p.lat, 0) / pins.length
+    : (minLat + maxLat) / 2;
+  const centerLng = pins.length
+    ? pins.reduce((s, p) => s + p.lng, 0) / pins.length
+    : (minLon + maxLon) / 2;
+  const zoom = computeZoom(pins, bbox);
+  const w = 800;
+  const h = Math.max(180, height * 2);
+  const markers = pins
+    .map((p, i) => `${p.lat},${p.lng},${pinColorToMarker(p.color, i)}`)
+    .join("|");
+  const base = `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat},${centerLng}&zoom=${zoom}&size=${w}x${h}&maptype=mapnik`;
+  return markers ? `${base}&markers=${encodeURIComponent(markers)}` : base;
+}
+
+export function MapWithPins({ pins, bbox = DEFAULT_BBOX, height = 180, title, legend, fullBleed }: MapWithPinsProps) {
+  const mapUrl = buildStaticMapUrl(pins, bbox, height);
 
   return (
     <div className={`bg-card overflow-hidden ${fullBleed ? "rounded-none border-y border-border" : "rounded-2xl border border-border"}`}>
@@ -43,32 +87,24 @@ export function MapWithPins({ pins, bbox = DEFAULT_BBOX, height = 180, title, le
           )}
         </div>
       )}
-      <div className="relative" style={{ height }}>
-        <iframe
-          src={embedUrl}
-          width="100%"
-          height={height}
-          style={{ border: 0, display: "block" }}
-          title={title || "Map"}
+      <div className="relative bg-muted" style={{ height }}>
+        <img
+          src={mapUrl}
+          alt={title || "Map"}
+          className="w-full h-full object-cover"
           loading="lazy"
         />
-        {pins.map((pin) => {
-          const pos = toPosition(pin.lat, pin.lng);
-          return (
-            <div
-              key={pin.id}
-              className="absolute -translate-x-1/2 -translate-y-full flex flex-col items-center pointer-events-none"
-              style={{ left: pos.left, top: pos.top }}
-              title={pin.label}
-            >
-              <span className="w-3 h-3 rounded-full border-2 border-white shadow-md" style={{ backgroundColor: pin.color }} />
-              <span className="text-[9px] font-medium text-foreground bg-white/90 px-1 py-0.5 rounded mt-0.5 shadow-sm max-w-[72px] truncate">
-                {pin.label}
-              </span>
-            </div>
-          );
-        })}
       </div>
+      {pins.length > 0 && (
+        <div className="px-4 py-2 border-t border-border flex flex-wrap gap-2">
+          {pins.map((pin) => (
+            <div key={pin.id} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: pin.color }} />
+              <span>{pin.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

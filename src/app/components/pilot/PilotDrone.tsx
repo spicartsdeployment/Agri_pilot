@@ -140,13 +140,14 @@ function DroneCalendar({
 }
 
 function BuyAgriInputsPanel() {
-  const { inventory } = useAgriStore();
+  const { inventory, requests } = useAgriStore();
   const [inputType, setInputType] = useState<"pesticide" | "fertilizer" | "chemical">("pesticide");
   const [productId, setProductId] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [requestId, setRequestId] = useState("");
+  const [paying, setPaying] = useState(false);
+  const [paidIds, setPaidIds] = useState<Set<string>>(new Set());
 
+  const myRequests = requests.filter((r) => r.pilotName === pilotProfile.name);
   const products = inventory.filter((i) => i.type === inputType && i.stock > 0);
   const selected = inventory.find((i) => i.id === productId);
   const qty = parseInt(quantity, 10) || 0;
@@ -155,7 +156,7 @@ function BuyAgriInputsPanel() {
 
   const handleSubmit = () => {
     if (!selected || qty < 1 || overStock) return;
-    const id = submitAgriPurchaseRequest({
+    submitAgriPurchaseRequest({
       pilotName: pilotProfile.name,
       productId: selected.id,
       brand: selected.brand,
@@ -164,29 +165,29 @@ function BuyAgriInputsPanel() {
       unit: selected.unit,
       amount: total,
     });
-    setRequestId(id);
-    setSubmitted(true);
+    setProductId("");
+    setQuantity("");
   };
 
-  if (submitted) {
-    return (
-      <div className="bg-card border border-border rounded-2xl p-6 text-center space-y-3">
-        <div className="w-14 h-14 bg-secondary rounded-full flex items-center justify-center mx-auto">
-          <Check className="w-7 h-7 text-primary" />
-        </div>
-        <p className="text-sm font-semibold text-foreground">Request Sent!</p>
-        <p className="text-xs text-muted-foreground">Request {requestId} sent to your vendor for approval</p>
-        <button onClick={() => { setSubmitted(false); setProductId(""); setQuantity(""); }}
-          className="w-full bg-primary text-primary-foreground rounded-xl py-3 text-sm font-medium">New Request</button>
-      </div>
-    );
-  }
+  const handlePay = (reqId: string) => {
+    setPaying(true);
+    setTimeout(() => {
+      setPaying(false);
+      setPaidIds((p) => new Set(p).add(reqId));
+    }, 1200);
+  };
+
+  const statusStyle = (s: string) => {
+    if (s === "accepted") return "bg-green-100 text-green-700";
+    if (s === "declined") return "bg-red-100 text-red-700";
+    return "bg-amber-100 text-amber-700";
+  };
 
   return (
     <div className="space-y-4">
       <div className="bg-secondary rounded-xl p-3 flex items-center gap-2">
         <Package className="w-4 h-4 text-primary" />
-        <p className="text-xs text-muted-foreground">Select brand & quantity — request goes to vendor for approval</p>
+        <p className="text-xs text-muted-foreground">Select brand & quantity — vendor approves, then pay</p>
       </div>
 
       <div className="flex gap-1.5">
@@ -233,6 +234,45 @@ function BuyAgriInputsPanel() {
             <Send className="w-4 h-4" /> Submit Request to Vendor
           </button>
         </>
+      )}
+
+      {myRequests.length > 0 && (
+        <div className="space-y-2 pt-2 border-t border-border">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">My Requests</p>
+          {myRequests.map((req) => (
+            <div key={req.id} className="bg-card border border-border rounded-xl p-3 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-xs font-medium text-foreground">{req.brand}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">{req.id} · {req.quantity} {req.unit}</p>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium capitalize ${statusStyle(req.status)}`}>
+                  {req.status}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Amount</span>
+                <span className="font-semibold text-foreground">₹{req.amount.toLocaleString()}</span>
+              </div>
+              {req.status === "accepted" && !paidIds.has(req.id) && (
+                <button onClick={() => handlePay(req.id)} disabled={paying}
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white rounded-xl py-2.5 text-xs font-medium disabled:opacity-60">
+                  <CreditCard className="w-3.5 h-3.5" />
+                  {paying ? "Processing…" : `Pay ₹${req.amount.toLocaleString()}`}
+                </button>
+              )}
+              {paidIds.has(req.id) && (
+                <p className="text-[10px] text-green-600 font-medium text-center">Payment completed ✓</p>
+              )}
+              {req.status === "pending" && (
+                <p className="text-[10px] text-muted-foreground">Awaiting vendor approval…</p>
+              )}
+              {req.status === "declined" && (
+                <p className="text-[10px] text-destructive">Request declined by vendor</p>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

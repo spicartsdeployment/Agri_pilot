@@ -13,7 +13,7 @@ type Role = "farmer" | "pilot" | "vendor";
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>("splash");
   const [role, setRole] = useState<Role | null>(null);
-  const [signUpRole, setSignUpRole] = useState<"farmer" | "pilot">("farmer");
+  const [signUpRole, setSignUpRole] = useState<"farmer" | "pilot" | "vendor">("farmer");
 
   const handleSplashComplete = useCallback(() => setPhase("guest"), []);
   const handleLogin = (r: Role) => { setRole(r); setPhase("guest"); };
