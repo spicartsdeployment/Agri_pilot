@@ -22,7 +22,7 @@ export function GuestTopBar({ onLogin }: GuestTopBarProps) {
           className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity shadow-sm"
         >
           <LogIn className="w-3.5 h-3.5" />
-          Login
+
         </button>
       </div>
     </header>

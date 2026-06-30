@@ -7,23 +7,21 @@ export function HeroVideo() {
 
   return (
     <div className="absolute inset-0">
-      {!videoFailed ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster={HERO_VIDEO_POSTER}
-          onError={() => setVideoFailed(true)}
-          className="w-full h-full object-cover"
-        >
-          {/* Place your file at: public/videos/hero-drone.mp4 */}
-          <source src={HERO_VIDEO_SRC} type="video/mp4" />
-        </video>
-      ) : (
-        <img src={HERO_VIDEO_POSTER} alt="Agricultural drone operations" className="w-full h-full object-cover" />
-      )}
+
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster={HERO_VIDEO_POSTER}
+        onError={() => setVideoFailed(true)}
+        className="w-full h-full object-cover"
+      >
+        {/* Place your file at: public/videos/hero-drone.mp4 */}
+        <source src={HERO_VIDEO_SRC} type="video/mp4" />
+      </video>
+
     </div>
   );
 }

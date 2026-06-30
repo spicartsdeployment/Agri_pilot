@@ -29,13 +29,14 @@ export function GuestHome({ onBookPilot, onBecomePilot, onLearnMore }: GuestHome
               Book certified drone pilots, rent agricultural drones, monitor farms, and improve crop productivity—all from one platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <button onClick={onBookPilot}
+              {/* <button onClick={onBookPilot}
                 className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3.5 rounded-2xl text-sm font-semibold shadow-lg shadow-green-900/30 transition-all hover:scale-[1.02]">
                 Book a Pilot <ArrowRight className="w-4 h-4" />
-              </button>
-              <button onClick={onBecomePilot}
-                className="flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur text-white border border-white/30 px-6 py-3.5 rounded-2xl text-sm font-semibold transition-all">
-                Become a Pilot
+              </button> */}
+              <button onClick={onBookPilot}
+                className=" flex items-center justify-center bg-white/15 hover:bg-white/25 backdrop-blur text-white border border-white/30 px-6 py-3.5 rounded-2xl text-sm font-semibold transition-all"
+                style={{ backdropFilter: "blur(10px)", width: "fit-content" }}>
+                Book  a Pilot
               </button>
             </div>
           </div>
