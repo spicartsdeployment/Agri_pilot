@@ -199,11 +199,12 @@ export function FarmerHome() {
         )}
       </div>
 
-      {/* ── Map — farmer fields ── */}
-      <div className="mx-5 mb-5">
+      {/* ── Map — farmer fields (edge-to-edge) ── */}
+      <div className="mb-5">
         <MapWithPins
+          fullBleed
           title="Kamptee, Maharashtra"
-          height={180}
+          height={200}
           pins={farms.map((f) => ({
             id: String(f.id),
             label: f.name,
@@ -213,7 +214,7 @@ export function FarmerHome() {
           }))}
           legend={[{ label: "Your Fields", color: "#0369a1" }]}
         />
-        <div className="bg-card rounded-b-2xl border border-t-0 border-border p-3 space-y-2 -mt-px">
+        <div className="mx-4 mt-3 bg-card rounded-2xl border border-border p-3 space-y-2">
           {farms.map((f) => (
             <button
               key={f.id}

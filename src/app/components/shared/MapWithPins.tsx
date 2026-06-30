@@ -12,11 +12,12 @@ type MapWithPinsProps = {
   height?: number;
   title?: string;
   legend?: { label: string; color: string }[];
+  fullBleed?: boolean;
 };
 
 const DEFAULT_BBOX: [number, number, number, number] = [79.05, 21.08, 79.25, 21.28];
 
-export function MapWithPins({ pins, bbox = DEFAULT_BBOX, height = 180, title, legend }: MapWithPinsProps) {
+export function MapWithPins({ pins, bbox = DEFAULT_BBOX, height = 180, title, legend, fullBleed }: MapWithPinsProps) {
   const [minLon, minLat, maxLon, maxLat] = bbox;
   const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${minLon}%2C${minLat}%2C${maxLon}%2C${maxLat}&layer=mapnik`;
 
@@ -26,7 +27,7 @@ export function MapWithPins({ pins, bbox = DEFAULT_BBOX, height = 180, title, le
   });
 
   return (
-    <div className="bg-card rounded-2xl border border-border overflow-hidden">
+    <div className={`bg-card overflow-hidden ${fullBleed ? "rounded-none border-y border-border" : "rounded-2xl border border-border"}`}>
       {(title || legend) && (
         <div className="flex items-center justify-between px-4 py-3 border-b border-border gap-2 flex-wrap">
           {title && <span className="text-sm font-medium text-foreground">{title}</span>}

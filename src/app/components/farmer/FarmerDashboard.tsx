@@ -21,8 +21,8 @@ export function FarmerDashboard({ onLogout }: FarmerDashboardProps) {
   const [activeTab, setActiveTab] = useState("home");
 
   return (
-    <div className="min-h-screen bg-background max-w-sm mx-auto relative">
-      <div className="pb-20">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-background relative">
+      <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom))]">
         {activeTab === "home" && <FarmerHome />}
         {activeTab === "history" && <FarmerHistory />}
         {activeTab === "about" && <FarmerAbout />}

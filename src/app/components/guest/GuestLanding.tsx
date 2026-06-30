@@ -54,11 +54,11 @@ export function GuestLanding({ onLogin, onSignUp }: GuestLandingProps) {
   const requireAuth = (intent: AuthIntent) => openLogin(intent, "login");
 
   return (
-    <div className="min-h-screen bg-background w-full">
-      <div className="max-w-6xl mx-auto min-h-screen relative flex flex-col">
+    <div className="min-h-screen bg-background w-full max-w-full overflow-x-hidden">
+      <div className="w-full md:max-w-6xl md:mx-auto min-h-screen relative flex flex-col">
         <GuestTopBar onLogin={() => openLogin("farmer", "login")} />
 
-        <main className="flex-1 pb-24">
+        <main className="flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))]">
           {showLogin ? (
             <GuestLogin
               onLogin={onLogin}

@@ -287,11 +287,12 @@ export function PilotHome({ onGoToSettings }: PilotHomeProps) {
         )}
       </div>
 
-      {/* Map Card — Active & Accepted jobs */}
-      <div className="mx-5 mb-4">
+      {/* Map — Active & Accepted jobs (edge-to-edge) */}
+      <div className="mb-4">
         <MapWithPins
+          fullBleed
           title="Job Locations"
-          height={180}
+          height={200}
           pins={jobMapPins}
           legend={[
             { label: "Active", color: "#374151" },

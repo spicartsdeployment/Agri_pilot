@@ -21,8 +21,8 @@ export function VendorDashboard({ onLogout }: VendorDashboardProps) {
   const [activeTab, setActiveTab] = useState("home");
 
   return (
-    <div className="vendor-theme min-h-screen bg-background max-w-sm mx-auto relative">
-      <div className="pb-20">
+    <div className="vendor-theme min-h-screen w-full max-w-full overflow-x-hidden bg-background relative">
+      <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom))]">
         {activeTab === "home"     && <VendorHome />}
         {activeTab === "drones"   && <DroneModule />}
         {activeTab === "history"  && <VendorHistory />}

@@ -23,8 +23,8 @@ export function PilotDashboard({ onLogout }: PilotDashboardProps) {
   const [activeTab, setActiveTab] = useState("home");
 
   return (
-    <div className="pilot-theme min-h-screen bg-background max-w-sm mx-auto relative">
-      <div className="pb-20">
+    <div className="pilot-theme min-h-screen w-full max-w-full overflow-x-hidden bg-background relative">
+      <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom))]">
         {activeTab === "home"       && <PilotHome onGoToSettings={() => setActiveTab("settings")} />}
         {activeTab === "drone"      && <PilotDrone />}
         {activeTab === "activejobs" && <PilotActiveJobs />}
