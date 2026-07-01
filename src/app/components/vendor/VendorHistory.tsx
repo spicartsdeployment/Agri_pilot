@@ -170,7 +170,7 @@ export function VendorHistory() {
   return (
     <div className="min-h-screen bg-background pb-8">
       <div className="px-5 pt-12 pb-5">
-        <h2 className="text-foreground">History</h2>
+        <h2 className="text-foreground font-bold">History</h2>
         <p className="text-sm text-muted-foreground mt-1">Rentals, drone sales & agri-inputs</p>
       </div>
 

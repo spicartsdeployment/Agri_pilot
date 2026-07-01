@@ -14,21 +14,21 @@ export function GuestHome({ onBookPilot, onBecomePilot, onLearnMore }: GuestHome
   return (
     <div className="animate-in fade-in duration-500">
       {/* Hero */}
-      <section className="relative w-full min-h-[72vh] md:min-h-[80vh] flex items-center overflow-hidden">
+      <section className="relative w-full min-h-[72vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden">
         <HeroVideo />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
-        <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-24 w-full">
-          <div className="max-w-2xl">
+        <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-24 w-full text-center">
+          <div className="max-w-2xl mx-auto">
             {/* <span className="inline-block bg-orange-500/90 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4">
               #1 Agri-Drone Platform
             </span> */}
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
               Smart Drone Solutions for Modern Agriculture
             </h1>
-            <p className="text-sm md:text-lg text-white/85 leading-relaxed mb-8 max-w-xl">
+            <p className="text-sm md:text-lg text-white/85 leading-relaxed mb-8 max-w-xl mx-auto">
               Book certified drone pilots, rent agricultural drones, monitor farms, and improve crop productivity—all from one platform.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               {/* <button onClick={onBookPilot}
                 className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-3.5 rounded-2xl text-sm font-semibold shadow-lg shadow-green-900/30 transition-all hover:scale-[1.02]">
                 Book a Pilot <ArrowRight className="w-4 h-4" />
@@ -114,9 +114,11 @@ export function GuestHome({ onBookPilot, onBecomePilot, onLearnMore }: GuestHome
         <h2 className="text-2xl md:text-3xl font-bold text-foreground text-center mb-8">Why Choose AgriPilot</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {whyChoose.map((item) => (
-            <div key={item} className="flex items-start gap-2 bg-card border border-border rounded-xl p-3 hover:border-green-300 transition-colors">
-              <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-              <span className="text-xs font-medium text-foreground">{item}</span>
+            <div key={item} className="flex flex-col items-center justify-center text-center gap-2 bg-card border border-border rounded-xl p-4 min-h-[88px] hover:border-green-300 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-green-600" />
+              </div>
+              <span className="text-xs font-medium text-foreground leading-snug">{item}</span>
             </div>
           ))}
         </div>
@@ -126,7 +128,30 @@ export function GuestHome({ onBookPilot, onBecomePilot, onLearnMore }: GuestHome
       <section className="bg-slate-50 py-12 md:py-16">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground text-center mb-10">How It Works</h2>
-          <div className="relative">
+
+          {/* Mobile — alternating timeline */}
+          <div className="md:hidden relative max-w-sm mx-auto">
+            <div className="absolute left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 bg-green-200" />
+            <div className="space-y-8">
+              {howItWorks.map(({ step, title, desc }, i) => (
+                <div
+                  key={step}
+                  className={`relative flex items-center gap-3 ${i % 2 === 0 ? "flex-row pr-[calc(50%+1rem)] text-right" : "flex-row-reverse pl-[calc(50%+1rem)] text-left"}`}
+                >
+                  <div className="absolute left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold shadow-md z-10">
+                    {step}
+                  </div>
+                  <div className={`flex-1 bg-white border border-border rounded-2xl p-3 shadow-sm ${i % 2 === 0 ? "mr-auto" : "ml-auto"}`}>
+                    <p className="text-xs font-semibold text-foreground">{title}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tablet & desktop — existing grid */}
+          <div className="hidden md:block relative">
             <div className="hidden md:block absolute top-8 left-8 right-8 h-0.5 bg-green-200" />
             <div className="grid md:grid-cols-6 gap-4">
               {howItWorks.map(({ step, title, desc }, i) => (

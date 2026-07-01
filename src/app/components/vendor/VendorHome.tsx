@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Bell, User, Check, X, ChevronRight, Cpu, Clock, TrendingUp, Calendar, Camera, Edit2, Phone, Mail, MapPin, Star, Shield, FileText } from "lucide-react";
+import { User, Check, X, ChevronRight, Cpu, Clock, TrendingUp, Calendar, Camera, Edit2, Phone, Mail, MapPin, Star, Shield, FileText } from "lucide-react";
 import { vendorPilots, VendorPilot } from "../shared/vendorPilotsData";
+import { PortalTopBar } from "../shared/PortalTopBar";
 
 const rentalRequests = [
   { id: "REQ-101", pilot: "Arjun Singh",  experience: "3 years", license: "DL-MH-2023-0441", duration: "2 days", reason: "Crop spraying (Wheat)", cost: 4800, status: "pending" },
@@ -210,28 +211,17 @@ export function VendorHome() {
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
       {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}
 
-      {/* Top Bar */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-4">
-        <div>
-          <p className="text-xs text-muted-foreground">Drone Vendor</p>
-          <h2 className="text-foreground">TechDrone Solutions</h2>
-        </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => setShowNotifications(true)}
-            className="relative w-9 h-9 bg-card border border-border rounded-xl flex items-center justify-center hover:bg-secondary transition-colors">
-            <Bell className="w-4 h-4 text-foreground" />
-            {pending.length + pendingFarmer.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-accent-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
-                {pending.length + pendingFarmer.length}
-              </span>
-            )}
-          </button>
-          <button onClick={() => setShowProfile(true)}
-            className="w-10 h-10 bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
-            style={{ borderRadius: "0.75rem 0.75rem 1.25rem 1.25rem" }}>
-            TS
-          </button>
-        </div>
+      <PortalTopBar
+        notificationCount={pending.length + pendingFarmer.length}
+        profileLabel={vendorProfile.avatar}
+        onNotifications={() => setShowNotifications(true)}
+        onProfile={() => setShowProfile(true)}
+      />
+
+      <div className="px-5 pb-4">
+        <p className="text-sm font-bold text-foreground">Good morning,</p>
+        <p className="text-sm font-bold text-foreground">{vendorProfile.name}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">Drone Vendor</p>
       </div>
 
       {/* Summary */}

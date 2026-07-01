@@ -364,7 +364,7 @@ export function DroneModule() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <div className="px-5 pt-12 pb-4">
-        <h2 className="text-foreground">Drones</h2>
+        <h2 className="text-foreground font-bold">Drones</h2>
         <div className="flex items-center gap-2 mt-4 bg-card border border-border rounded-xl px-3 py-2.5">
           <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           <input placeholder={activeTab === "inputs" ? "Search agri-inputs…" : `Search ${activeTab === "rent" ? "rental" : "sale"} drones…`} value={search}

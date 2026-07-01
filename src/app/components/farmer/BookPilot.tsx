@@ -199,7 +199,7 @@ export function BookPilot({ onBookingConfirmed, bookings, farms, onAddFarm, isPr
 
       {recentBookings.length > 0 && (
         <div>
-          <p className="text-xs text-muted-foreground font-medium mb-2">Recent Bookings</p>
+          <p className="text-base text-muted-foreground font-medium mb-2">Recent Bookings</p>
           <div className="space-y-2">
             {recentBookings.map((b) => (
               <div key={b.id} className="flex items-center gap-3 bg-card border border-border rounded-xl px-3 py-2.5">
@@ -221,7 +221,7 @@ export function BookPilot({ onBookingConfirmed, bookings, farms, onAddFarm, isPr
         <div className="relative h-28 overflow-hidden">
           <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=200&fit=crop&auto=format" alt="Farm field" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent flex items-end p-4">
-            <h3 className="text-white">Book a Pilot</h3>
+            <h3 className="text-white font-bold">Book a Pilot</h3>
           </div>
         </div>
 
@@ -232,7 +232,7 @@ export function BookPilot({ onBookingConfirmed, bookings, farms, onAddFarm, isPr
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-medium text-muted-foreground">Select Farm *</label>
+              <label className="text-base font-medium text-muted-foreground">Select Farm *</label>
               <button onClick={() => setShowAddFarm(true)} className="flex items-center gap-1 text-xs text-primary font-medium">
                 <Plus className="w-3.5 h-3.5" /> Add New Farm
               </button>

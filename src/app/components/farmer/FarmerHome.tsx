@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, MapPin, Droplets, Wind, BookOpen, Briefcase, Tractor, Gift, ArrowLeft, Plane, AlertTriangle } from "lucide-react";
+import { Droplets, Wind, BookOpen, Briefcase, Tractor, Gift, ArrowLeft, Plane, AlertTriangle } from "lucide-react";
 import { BookPilot } from "./BookPilot";
 import { JobsTab } from "./JobsTab";
 import { FarmsTab } from "./FarmsTab";
@@ -9,6 +9,7 @@ import { FarmerProfileModal } from "./FarmerProfileModal";
 import { initialBookings, initialFarms, initialNotifications, Booking, Farm, FarmerNotification, JOB_TRACKING_EVENTS } from "./farmerData";
 import { getDgcaFlyStatus } from "../shared/dgcaUtils";
 import { MapWithPins } from "../shared/MapWithPins";
+import { PortalTopBar } from "../shared/PortalTopBar";
 
 type SubPage = "book" | "jobs" | "farms" | "refer" | null;
 
@@ -38,10 +39,10 @@ const weatherData = {
 };
 
 const subPages = [
-  { id: "book"  as const, label: "Book a Pilot", icon: <BookOpen  className="w-7 h-7" />, color: "bg-primary",      text: "text-primary-foreground" },
-  { id: "jobs"  as const, label: "Jobs",          icon: <Briefcase className="w-7 h-7" />, color: "bg-green-600",   text: "text-white" },
-  { id: "farms" as const, label: "Farms",         icon: <Tractor   className="w-7 h-7" />, color: "bg-emerald-500", text: "text-white" },
-  { id: "refer" as const, label: "Refer & Earn",  icon: <Gift      className="w-7 h-7" />, color: "bg-amber-500",   text: "text-white" },
+  { id: "book"  as const, label: "Book a Pilot", icon: <BookOpen  className="w-7 h-7" />, color: "bg-green-600", text: "text-white" },
+  { id: "jobs"  as const, label: "Jobs",          icon: <Briefcase className="w-7 h-7" />, color: "bg-green-600", text: "text-white" },
+  { id: "farms" as const, label: "Farms",         icon: <Tractor   className="w-7 h-7" />, color: "bg-green-600", text: "text-white" },
+  { id: "refer" as const, label: "Refer & Earn",  icon: <Gift      className="w-7 h-7" />, color: "bg-green-600", text: "text-white" },
 ];
 
 function SubPageWrapper({ title, onBack, children }: { title: string; onBack: () => void; children: React.ReactNode }) {
@@ -51,7 +52,7 @@ function SubPageWrapper({ title, onBack, children }: { title: string; onBack: ()
         <button onClick={onBack} className="w-9 h-9 bg-card border border-border rounded-xl flex items-center justify-center hover:bg-secondary transition-colors">
           <ArrowLeft className="w-4 h-4 text-foreground" />
         </button>
-        <h2 className="text-foreground">{title}</h2>
+        <h2 className="text-foreground font-bold">{title}</h2>
       </div>
       <div className="px-5 pt-4">{children}</div>
     </div>
@@ -112,35 +113,16 @@ export function FarmerHome() {
       {showNotifications && <NotificationPanel notifications={notifs} onUpdate={setNotifs} onClose={() => setShowNotifications(false)} />}
       {showProfile       && <FarmerProfileModal onClose={() => setShowProfile(false)} />}
 
-      {/* Top Nav — green theme */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-4">
-        <div>
-          <p className="text-xs text-muted-foreground">Good morning,</p>
-          <h2 className="text-foreground">Rajesh Kumar</h2>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Notification bell — curved bottom */}
-          <button
-            onClick={() => setShowNotifications(true)}
-            className="relative w-9 h-9 bg-card border border-border flex items-center justify-center hover:bg-secondary transition-colors"
-            style={{ borderRadius: "0.75rem 0.75rem 1.25rem 1.25rem" }}
-          >
-            <Bell className="w-4 h-4 text-foreground" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-accent-foreground text-[9px] font-bold rounded-full flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-          {/* Profile — curved bottom */}
-          <button
-            onClick={() => setShowProfile(true)}
-            className="w-10 h-10 bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
-            style={{ borderRadius: "0.75rem 0.75rem 1.25rem 1.25rem" }}
-          >
-            RK
-          </button>
-        </div>
+      <PortalTopBar
+        notificationCount={unreadCount}
+        profileLabel="RK"
+        onNotifications={() => setShowNotifications(true)}
+        onProfile={() => setShowProfile(true)}
+      />
+
+      <div className="px-5 pb-4">
+        <p className="text-sm font-bold text-foreground">Good morning,</p>
+        <p className="text-sm font-bold text-foreground">Rajesh Kumar</p>
       </div>
 
       {/* ── Weather Card — condition-matched colors ── */}
@@ -203,8 +185,11 @@ export function FarmerHome() {
       <div className="mb-5">
         <MapWithPins
           fullBleed
+          interactive
           title="Kamptee, Maharashtra"
           height={200}
+          selectedPinId={selectedFarm !== null ? String(selectedFarm) : null}
+          onPinClick={(id) => setSelectedFarm(selectedFarm === Number(id) ? null : Number(id))}
           pins={farms.map((f) => ({
             id: String(f.id),
             label: f.name,
@@ -242,7 +227,7 @@ export function FarmerHome() {
               <span className={`text-sm font-semibold ${sp.text}`}>{sp.label}</span>
               {/* Badge on top-right of card, not on icon */}
               {sp.id === "jobs" && jobCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-primary text-[10px] font-bold rounded-full flex items-center justify-center shadow-md border border-green-200">
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-green-700 text-[10px] font-bold rounded-full flex items-center justify-center shadow-md border border-green-200">
                   {jobCount}
                 </span>
               )}

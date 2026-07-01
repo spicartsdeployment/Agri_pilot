@@ -196,7 +196,7 @@ export function PilotActiveJobs() {
   return (
     <div className="min-h-screen bg-background pb-6">
       <div className="px-5 pt-12 pb-5">
-        <h2 className="text-foreground">Active Jobs</h2>
+        <h2 className="text-foreground font-bold">Active Jobs</h2>
         <p className="text-sm text-muted-foreground mt-1">GPS geofencing, arrival verification & auto progress tracking</p>
       </div>
 
@@ -210,13 +210,12 @@ export function PilotActiveJobs() {
       <div className="px-5 mb-5">
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: "In Progress", value: activeJobs.length, dot: "bg-primary" },
-            { label: "Today", value: todayJobs.length, dot: "bg-amber-500" },
-            { label: "Upcoming", value: upcomingJobs.length, dot: "bg-muted-foreground" },
-          ].map(({ label, value, dot }) => (
+            { label: "In Progress", value: activeJobs.length, valueClass: "text-primary" },
+            { label: "Today", value: todayJobs.length, valueClass: "text-amber-500" },
+            { label: "Upcoming", value: upcomingJobs.length, valueClass: "text-muted-foreground" },
+          ].map(({ label, value, valueClass }) => (
             <div key={label} className="bg-card border border-border rounded-2xl p-3 text-center">
-              <div className="flex justify-center mb-1.5"><span className={`w-2 h-2 rounded-full ${dot}`} /></div>
-              <p className="text-base font-semibold text-foreground">{value}</p>
+              <p className={`text-base font-semibold ${valueClass}`}>{value}</p>
               <p className="text-xs text-muted-foreground">{label}</p>
             </div>
           ))}

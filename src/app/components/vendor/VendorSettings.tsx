@@ -697,7 +697,7 @@ export function VendorSettings({ onLogout }: VendorSettingsProps) {
 
   return (
     <div className="min-h-screen bg-background pb-8">
-      <div className="px-5 pt-12 pb-6"><h2 className="text-foreground">Settings</h2></div>
+      <div className="px-5 pt-12 pb-6"><h2 className="text-foreground font-bold">Settings</h2></div>
 
       <div className="px-5 mb-6">
         <button onClick={() => setPage("profile")}

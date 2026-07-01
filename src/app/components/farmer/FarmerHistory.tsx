@@ -202,7 +202,7 @@ export function FarmerHistory() {
   return (
     <div className="min-h-screen bg-background">
       <div className="px-5 pt-12 pb-4">
-        <h2 className="text-foreground">History</h2>
+        <h2 className="text-foreground font-bold">History</h2>
         <p className="text-sm text-muted-foreground mt-1">Your service history</p>
       </div>
 

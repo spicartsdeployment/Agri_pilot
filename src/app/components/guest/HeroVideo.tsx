@@ -1,9 +1,8 @@
-import { useRef, useState } from "react";
-import { HERO_VIDEO_SRC, HERO_VIDEO_POSTER } from "./guestData";
+import { useRef } from "react";
+import { HERO_VIDEO_SRC } from "./guestData";
 
 export function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoFailed, setVideoFailed] = useState(false);
 
   return (
     <div className="absolute inset-0">
@@ -14,8 +13,6 @@ export function HeroVideo() {
         loop
         muted
         playsInline
-        poster={HERO_VIDEO_POSTER}
-        onError={() => setVideoFailed(true)}
         className="w-full h-full object-cover"
       >
         {/* Place your file at: public/videos/hero-drone.mp4 */}

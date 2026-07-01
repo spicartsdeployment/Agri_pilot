@@ -83,7 +83,7 @@ export function PilotGig() {
   return (
     <div className="min-h-screen bg-background pb-6">
       <div className="px-5 pt-12 pb-5">
-        <h2 className="text-foreground">Availability</h2>
+        <h2 className="text-foreground font-bold">Available</h2>
         <p className="text-sm text-muted-foreground mt-1">Manage your working schedule</p>
       </div>
 

@@ -1,4 +1,7 @@
-export type MapPin = {
+import { useMemo } from "react";
+import { MapPin } from "lucide-react";
+
+export type MapPinType = {
   id: string;
   label: string;
   lat: number;
@@ -7,12 +10,15 @@ export type MapPin = {
 };
 
 type MapWithPinsProps = {
-  pins: MapPin[];
+  pins: MapPinType[];
   bbox?: [number, number, number, number];
   height?: number;
   title?: string;
   legend?: { label: string; color: string }[];
   fullBleed?: boolean;
+  interactive?: boolean;
+  selectedPinId?: string | null;
+  onPinClick?: (id: string) => void;
 };
 
 const DEFAULT_BBOX: [number, number, number, number] = [79.05, 21.08, 79.25, 21.28];
@@ -32,7 +38,20 @@ function pinColorToMarker(color: string, index: number): string {
   return map[color] || MARKER_COLORS[index % MARKER_COLORS.length];
 }
 
-function computeZoom(pins: MapPin[], bbox: [number, number, number, number]): number {
+function computeBbox(pins: MapPinType[], base: [number, number, number, number]): [number, number, number, number] {
+  if (pins.length === 0) return base;
+  const lats = pins.map((p) => p.lat);
+  const lngs = pins.map((p) => p.lng);
+  const pad = 0.02;
+  return [
+    Math.min(...lngs) - pad,
+    Math.min(...lats) - pad,
+    Math.max(...lngs) + pad,
+    Math.max(...lats) + pad,
+  ];
+}
+
+function computeZoom(pins: MapPinType[], bbox: [number, number, number, number]): number {
   if (pins.length === 0) return 11;
   const lats = pins.map((p) => p.lat);
   const lngs = pins.map((p) => p.lng);
@@ -49,7 +68,7 @@ function computeZoom(pins: MapPin[], bbox: [number, number, number, number]): nu
   return 13;
 }
 
-function buildStaticMapUrl(pins: MapPin[], bbox: [number, number, number, number], height: number): string {
+function buildStaticMapUrl(pins: MapPinType[], bbox: [number, number, number, number], height: number): string {
   const [minLon, minLat, maxLon, maxLat] = bbox;
   const centerLat = pins.length
     ? pins.reduce((s, p) => s + p.lat, 0) / pins.length
@@ -67,8 +86,32 @@ function buildStaticMapUrl(pins: MapPin[], bbox: [number, number, number, number
   return markers ? `${base}&markers=${encodeURIComponent(markers)}` : base;
 }
 
-export function MapWithPins({ pins, bbox = DEFAULT_BBOX, height = 180, title, legend, fullBleed }: MapWithPinsProps) {
-  const mapUrl = buildStaticMapUrl(pins, bbox, height);
+function buildEmbedUrl(bbox: [number, number, number, number]): string {
+  const [minLon, minLat, maxLon, maxLat] = bbox;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${minLon}%2C${minLat}%2C${maxLon}%2C${maxLat}&layer=mapnik`;
+}
+
+function latLngToPercent(lat: number, lng: number, bbox: [number, number, number, number]) {
+  const [minLon, minLat, maxLon, maxLat] = bbox;
+  const x = ((lng - minLon) / (maxLon - minLon)) * 100;
+  const y = ((maxLat - lat) / (maxLat - minLat)) * 100;
+  return { left: `${Math.min(96, Math.max(4, x))}%`, top: `${Math.min(96, Math.max(4, y))}%` };
+}
+
+export function MapWithPins({
+  pins,
+  bbox = DEFAULT_BBOX,
+  height = 180,
+  title,
+  legend,
+  fullBleed,
+  interactive,
+  selectedPinId,
+  onPinClick,
+}: MapWithPinsProps) {
+  const activeBbox = useMemo(() => computeBbox(pins, bbox), [pins, bbox]);
+  const mapUrl = buildStaticMapUrl(pins, activeBbox, height);
+  const embedUrl = buildEmbedUrl(activeBbox);
 
   return (
     <div className={`bg-card overflow-hidden ${fullBleed ? "rounded-none border-y border-border" : "rounded-2xl border border-border"}`}>
@@ -88,20 +131,64 @@ export function MapWithPins({ pins, bbox = DEFAULT_BBOX, height = 180, title, le
         </div>
       )}
       <div className="relative bg-muted" style={{ height }}>
-        <img
-          src={mapUrl}
-          alt={title || "Map"}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
+        {interactive ? (
+          <>
+            <iframe
+              title={title || "Farm map"}
+              src={embedUrl}
+              className="w-full h-full border-0"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 pointer-events-none">
+              {pins.map((pin) => {
+                const pos = latLngToPercent(pin.lat, pin.lng, activeBbox);
+                const selected = selectedPinId === pin.id;
+                return (
+                  <button
+                    key={pin.id}
+                    type="button"
+                    onClick={() => onPinClick?.(pin.id)}
+                    className="absolute pointer-events-auto -translate-x-1/2 -translate-y-full flex flex-col items-center gap-0.5"
+                    style={{ left: pos.left, top: pos.top }}
+                    aria-label={pin.label}
+                  >
+                    <MapPin
+                      className={`w-7 h-7 drop-shadow-md ${selected ? "text-green-600 scale-110" : "text-red-600"}`}
+                      fill="currentColor"
+                    />
+                    {selected && (
+                      <span className="text-[9px] font-semibold bg-white/95 text-foreground px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap max-w-[80px] truncate">
+                        {pin.label}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <img
+            src={mapUrl}
+            alt={title || "Map"}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        )}
       </div>
       {pins.length > 0 && (
         <div className="px-4 py-2 border-t border-border flex flex-wrap gap-2">
           {pins.map((pin) => (
-            <div key={pin.id} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <button
+              key={pin.id}
+              type="button"
+              onClick={() => onPinClick?.(pin.id)}
+              className={`flex items-center gap-1.5 text-[10px] rounded-full px-2 py-0.5 transition-colors ${
+                selectedPinId === pin.id ? "bg-secondary text-foreground font-medium" : "text-muted-foreground hover:bg-secondary/50"
+              }`}
+            >
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: pin.color }} />
               <span>{pin.label}</span>
-            </div>
+            </button>
           ))}
         </div>
       )}

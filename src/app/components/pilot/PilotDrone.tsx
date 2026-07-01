@@ -190,14 +190,19 @@ function BuyAgriInputsPanel() {
         <p className="text-xs text-muted-foreground">Select brand & quantity — vendor approves, then pay</p>
       </div>
 
-      <div className="flex gap-1.5">
-        {(["pesticide", "fertilizer", "chemical"] as const).map((t) => (
-          <button key={t} onClick={() => { setInputType(t); setProductId(""); setQuantity(""); }}
-            className={`flex-1 py-2 rounded-xl text-[10px] font-medium border capitalize ${inputType === t ? "border-primary bg-secondary text-primary" : "border-border text-muted-foreground"}`}>
-            {t}
-          </button>
-        ))}
-      </div>
+      <div className="bg-slate-50/90 rounded-2xl p-4 space-y-4">
+        <div className="flex gap-1.5">
+          {([
+            { id: "pesticide" as const, label: "Pesticides" },
+            { id: "fertilizer" as const, label: "Fertilizers" },
+            { id: "chemical" as const, label: "Chemicals" },
+          ]).map(({ id, label }) => (
+            <button key={id} onClick={() => { setInputType(id); setProductId(""); setQuantity(""); }}
+              className={`flex-1 py-2.5 rounded-xl text-[10px] sm:text-xs font-medium border ${inputType === id ? "border-primary bg-card text-primary shadow-sm" : "border-border text-muted-foreground bg-white/60"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
 
       <div className="space-y-2">
         {products.length === 0 ? (
@@ -235,6 +240,7 @@ function BuyAgriInputsPanel() {
           </button>
         </>
       )}
+      </div>
 
       {myRequests.length > 0 && (
         <div className="space-y-2 pt-2 border-t border-border">
@@ -365,7 +371,7 @@ export function PilotDrone() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <div className="px-5 pt-12 pb-4">
-        <h2 className="text-foreground">Drone</h2>
+        <h2 className="text-foreground font-bold">Drone</h2>
         <div className="flex items-center gap-2 mt-4 bg-card border border-border rounded-xl px-3 py-2.5">
           <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           <input placeholder="Search drones…" value={search} onChange={(e) => setSearch(e.target.value)}
@@ -374,23 +380,22 @@ export function PilotDrone() {
       </div>
 
       <div className="px-5 mb-2">
-        <div className="bg-secondary rounded-xl px-3 py-2 text-[10px] text-muted-foreground">
-          Rental: min {DRONE_RENTAL_MIN_HOURS}h · max {DRONE_RENTAL_MAX_DAYS} days · 20% advance · 10-min free cancel
-        </div>
-      </div>
-
-      <div className="px-5 mb-5">
-        <div className="flex bg-secondary rounded-xl p-1 gap-1 overflow-x-auto">
-          {([
-            { id: "rent" as const, label: "Rent a Drone" },
-            { id: "myDrone" as const, label: "Rent My Drone" },
-            { id: "buyInputs" as const, label: "Buy Pesticides & Fertilizers" },
-          ]).map((t) => (
-            <button key={t.id} onClick={() => setActiveTab(t.id)}
-              className={`flex-1 min-w-0 py-2.5 px-1 rounded-lg text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap ${activeTab === t.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {t.label}
-            </button>
-          ))}
+        <div className="bg-slate-50/90 rounded-2xl p-4 space-y-3">
+          <div className="bg-secondary rounded-xl px-3 py-2 text-[10px] text-muted-foreground">
+            Rental: min {DRONE_RENTAL_MIN_HOURS}h · max {DRONE_RENTAL_MAX_DAYS} days · 20% advance · 10-min free cancel
+          </div>
+          <div className="flex bg-secondary rounded-xl p-1 gap-1 overflow-x-auto">
+            {([
+              { id: "rent" as const, label: "Rent a Drone" },
+              { id: "myDrone" as const, label: "Rent My Drone" },
+              { id: "buyInputs" as const, label: "Buy Pesticides & Fertilizers" },
+            ]).map((t) => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)}
+                className={`flex-1 min-w-0 py-2.5 px-1 rounded-lg text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap ${activeTab === t.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

@@ -86,7 +86,7 @@ export function FarmerAbout() {
       {modal === "terms" && <PolicyModal title="Terms & Conditions" content={termsContent} onClose={() => setModal(null)} />}
 
       <div className="px-5 pt-12 pb-6">
-        <h2 className="text-foreground">About</h2>
+        <h2 className="text-foreground font-bold">About</h2>
       </div>
 
       <div className="px-5 space-y-4">

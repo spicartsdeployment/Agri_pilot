@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
-import { Bell, Droplets, Wind, MapPin, Clock, Check, X, Eye, AlertCircle, Settings, ChevronRight, Plane } from "lucide-react";
+import { Droplets, Wind, MapPin, Clock, Check, X, Eye, AlertCircle, Settings, ChevronRight, Plane } from "lucide-react";
 import { pilotProfile, initialJobRequests, weatherData, JobRequest, activeJobsList } from "./pilotData";
 import { PilotProfileModal } from "./PilotProfileModal";
 import { JobDetailModal } from "./JobDetailModal";
 import { DeclineJobModal } from "./DeclineJobModal";
 import { MapWithPins } from "../shared/MapWithPins";
+import { PortalTopBar } from "../shared/PortalTopBar";
 import { getDgcaFlyStatus } from "../shared/dgcaUtils";
 
 // ── Weather condition → gradient & text ──────────────────────────────
@@ -182,31 +183,17 @@ export function PilotHome({ onGoToSettings }: PilotHomeProps) {
         </div>
       )}
 
-      {/* Top Bar */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-4">
-        <div>
-          <p className="text-xs text-muted-foreground">Licensed Pilot · ★ {pilotRating}</p>
-          <h2 className="text-foreground">Good morning 👋</h2>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowNotifications(true)}
-            className="relative w-9 h-9 bg-card border border-border rounded-xl flex items-center justify-center hover:bg-secondary transition-colors"
-          >
-            <Bell className="w-4 h-4 text-foreground" />
-            {pendingJobs.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                {pendingJobs.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setShowProfile(true)}
-            className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
-          >
-            {pilotProfile.avatar}
-          </button>
-        </div>
+      <PortalTopBar
+        notificationCount={pendingJobs.length}
+        profileLabel={pilotProfile.avatar}
+        onNotifications={() => setShowNotifications(true)}
+        onProfile={() => setShowProfile(true)}
+      />
+
+      <div className="px-5 pb-4">
+        <p className="text-sm font-bold text-foreground">Good morning 👋</p>
+        <p className="text-sm font-bold text-foreground">{pilotProfile.name}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">Licensed Pilot · ★ {pilotRating}</p>
       </div>
 
       {/* ── Weather Card — condition-matched colors ── */}

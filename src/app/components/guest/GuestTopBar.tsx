@@ -6,7 +6,7 @@ interface GuestTopBarProps {
 
 export function GuestTopBar({ onLogin }: GuestTopBarProps) {
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-border/60 shadow-sm">
+    <header className="bg-white/90 backdrop-blur-md border-b border-border/60 shadow-md">
       <div className="max-w-6xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center shadow-md">
