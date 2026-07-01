@@ -129,7 +129,7 @@ export function GuestDrones({ onRentNow }: GuestDronesProps) {
 
       <p className="text-xs text-muted-foreground mb-4">{filtered.length} drones found</p>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3">
         {filtered.map((drone) => (
           <div key={drone.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg transition-all">
             <div className="relative">
@@ -146,18 +146,23 @@ export function GuestDrones({ onRentNow }: GuestDronesProps) {
               </span>
             </div>
             <div className="p-3">
-              <p className="text-[10px] text-muted-foreground">{drone.manufacturer}</p>
-              <p className="text-xs font-semibold text-foreground mt-0.5 leading-tight">{drone.name}</p>
-              <div className="flex items-center gap-1 mt-1">
-                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                <span className="text-[10px] text-muted-foreground">{drone.vendorRating}</span>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{drone.manufacturer}</p>
+                  <p className="text-xs font-semibold text-foreground mt-0.5 leading-tight">{drone.name}</p>
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                  <span className="text-[10px] text-muted-foreground">{drone.vendorRating}</span>
+                  <p className="text-sm font-bold text-green-600 mt-2">
+                    {listingTab === "rent"
+                      ? <>₹{drone.pricePerDay.toLocaleString()}<span className="text-[10px] font-normal text-muted-foreground">/day</span></>
+                      : <>₹{(drone.salePrice ?? 0).toLocaleString()}</>
+                    }
+                  </p>
+                </div>
               </div>
-              <p className="text-sm font-bold text-green-600 mt-2">
-                {listingTab === "rent"
-                  ? <>₹{drone.pricePerDay.toLocaleString()}<span className="text-[10px] font-normal text-muted-foreground">/day</span></>
-                  : <>₹{(drone.salePrice ?? 0).toLocaleString()}</>
-                }
-              </p>
+
               <div className="flex gap-2 mt-3">
                 <button onClick={() => setDetail(drone)}
                   className="flex-1 py-2 border border-border rounded-xl text-[10px] font-medium hover:bg-secondary">
